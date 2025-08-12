@@ -83,21 +83,21 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#0E4772" }}>
-      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+    <div className="min-h-screen bg-white">
+      <div className="text-[#0E4772] py-8" style={{ backgroundColor: "#ffffff" }}>
         <div className="max-w-4xl mx-auto px-6">
-          <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
+          <Link href="/" className="inline-flex items-center text-[#0E4772] hover:text-[#7ACB59] transition-colors mb-6">
             ← Back to Blog
           </Link>
 
-          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-white">{post.title}</h1>
+          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-[#0E4772]">{post.title}</h1>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[#7ACB59]">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#0E4772]">
             <span>by {author?.name}</span>
             <span>•</span>
             <button
               onClick={() => handleCategoryClick(post.categoryId)}
-              className="text-[#7ACB59] hover:text-green-200 transition-colors underline"
+              className="text-[#0E4772] hover:text-[#7ACB59] transition-colors underline"
             >
               {category?.name}
             </button>
@@ -114,7 +114,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
       </div>
 
       {/* Main content */}
-      <div className="max-w-4xl mx-auto px-6 py-12 bg-white rounded-t-lg">
+      <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Post Image */}
         {post.image && (
           <div className="mb-12">

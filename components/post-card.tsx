@@ -38,75 +38,42 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
   return (
     <div className="break-inside-avoid mb-6">
       <div
-        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
-        style={{ border: "1.5px solid #000000" }}
+        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-6"
+        style={{ border: "1.5px solid #E5E7EB" }}
       >
-        {/* Post Image */}
-        {post.image && (
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src={imageError ? getFallbackImage() : post.image}
-              alt={post.title}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={handleImageError}
-            />
-          </div>
-        )}
-
         {/* Content Block */}
-        <div className="p-6 space-y-4">
-          {/* Meta Information - changed from text-gray-500 to text-black */}
-          <div className="text-sm text-black font-light">
-            {new Date().toLocaleDateString("en-US", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </div>
-
-          {/* Title - changed from text-black-xl to text-xl and ensured black color */}
-          <h2 className="text-xl font-bold uppercase tracking-wide leading-tight text-black">
-            <Link href={`/post/${post.id}`} className="hover:text-green transition-colors">
+        <div className="space-y-4">
+          {/* Title */}
+          <h2 className="text-xl font-bold tracking-wide leading-tight text-black">
+            <Link href={`/post/${post.id}`} className="hover:text-green-600 transition-colors">
               {post.title}
             </Link>
           </h2>
-
-          {/* Author and Category - changed from text-gray-600 to text-black */}
-          <div className="flex items-center gap-2 text-sm text-black">
-            <span>by {getAuthorName(post.authorId)}</span>
-            <span>•</span>
-            <button onClick={() => onCategoryClick(post.categoryId)} className="hover:text-black-600 transition-colors">
-              {getCategoryName(post.categoryId)}
-            </button>
+          
+          {/* Category */}
+          <div className="text-sm text-gray-500">
+            Category: <button onClick={() => onCategoryClick(post.categoryId)} className="underline text-black-600 hover:text-black transition-colors">{getCategoryName(post.categoryId)}</button>
           </div>
 
-          {/* Content Preview - changed from text-gray-700 to text-black */}
-          <div className="text-black text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
-
-          {/* Tags */}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {post.tags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => onTagClick(tag)}
-                style={{
-                  border: "1.5px solid #000000",
-                  backgroundColor: "white",
-                  color: "#000000",
-                  borderRadius: "999px",
-                  padding: "0.25rem 0.75rem",
-                  marginRight: "0.5rem",
-                  fontSize: "0.85rem",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-                className="transition-colors"
-              >
-                #{tag}
-              </button>
-            ))}
+          {/* Author */}
+          <div className="text-sm text-gray-500">
+            Author: {getAuthorName(post.authorId)}
           </div>
+
+          {/* Content Preview */}
+          <div className="text-gray-700 text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
+
+          {/* Read More button */}
+          <div className="pt-4">
+            <Link
+              href={`/post/${post.id}`}
+              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-black font-medium bg-white hover:bg-gray-100 transition rounded-md"
+            >
+              Read More
+            </Link>
+          </div>
+
+          {/* Tags - removed as per new design */}
         </div>
       </div>
     </div>

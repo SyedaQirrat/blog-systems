@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import PostCard from "@/components/post-card"
+import { PortfolioGrid } from "@/components/portfolio-grid"
 
 interface Post {
   id: number

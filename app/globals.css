@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
 
 :root {
   --background: oklch(1 0 0);
@@ -10,7 +9,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #7ACB59; /* Green for primary */
+  --primary: #000000; /* Green for primary */
   --primary-foreground: #0E4772; /* Blue for text on green */
   --secondary: #0E4772; /* Blue for secondary */
   --secondary-foreground: #000000; /* Green for text on blue */
@@ -131,7 +130,7 @@
     border: 2px solid #7ACB59;
   }
   input, textarea, select {
-    border: 2px solid #7ACB59;
+    border: 2px solid #000000;
     color: #0E4772;
     background-color: #fff;
   }

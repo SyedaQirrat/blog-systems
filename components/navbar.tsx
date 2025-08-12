@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 
 interface Category {
@@ -173,7 +174,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
           <path
             key={`line-${lineIndex}`}
             d={generatePath(lineIndex, lines.length)}
-            stroke="rgba(40, 40, 40, 0.9)"
+            stroke="rgba(180, 220, 180, 0.9)" // <-- Brighter line color
             strokeWidth={isHovering ? "6" : "5"}
             fill="none"
             className="transition-all duration-100 ease-out"
@@ -200,20 +201,34 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
       <div className="relative z-10">
         {/* Top navigation bar */}
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 md:py-6">
-          {/* Studio logo */}
-          <div className="text-xs sm:text-sm font-light tracking-wide">Welcome to</div>
+          {/* Logo replaces "Welcome to" */}
+          <Image
+            src="/logo.png" // <-- Update with your actual logo file name
+            alt="SSTRACK BLOGS Logo"
+            width={55}
+            height={55}
+            className="mr-2"
+          />
 
           <Link
             href="/manage-post"
-            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium border border-white rounded-full hover:bg-white hover:text-black transition-colors cursor-pointer"
+            style={{
+              backgroundColor: "#7ACB59",
+              color: "white",
+              border: `2px solid #7ACB59`
+            }}
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
           >
             CREATE POST
           </Link>
         </div>
 
         <div className="text-center px-4 sm:px-6 md:px-8 pb-8 md:pb-12">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-thin tracking-tight leading-none">
-            Minimalist Blog
+          <h1
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-thin tracking-tight leading-none"
+            style={{ color: "#7ACB59" }} 
+          >
+            SSTRACK BLOGS
           </h1>
         </div>
 
@@ -222,11 +237,12 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
             {/* ALL filter */}
             <button
               onClick={onClearFilters}
-              className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                !currentCategory && !currentTag
-                  ? "bg-white text-black"
-                  : "border border-white text-white hover:bg-white hover:text-black"
-              }`}
+              style={{
+                backgroundColor: !currentCategory && !currentTag ? "#7ACB59" : "transparent",
+                color: !currentCategory && !currentTag ? "white" : "#7ACB59",
+                border: `2px solid #7ACB59`,
+              }}
+              className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer`}
             >
               ALL
             </button>
@@ -236,11 +252,12 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               <button
                 key={category.categoryId}
                 onClick={() => onCategoryClick(category.categoryId)}
-                className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer ${
-                  currentCategory === category.categoryId
-                    ? "bg-white text-black"
-                    : "border border-white text-white hover:bg-white hover:text-black"
-                }`}
+                style={{
+                  backgroundColor: currentCategory === category.categoryId ? "#7ACB59" : "transparent",
+                  color: currentCategory === category.categoryId ? "white" : "#7ACB59",
+                  border: `2px solid #7ACB59`,
+                }}
+                className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer`}
               >
                 {category.name.toUpperCase()}
               </button>

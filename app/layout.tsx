@@ -6,8 +6,8 @@ import { Footer } from "@/components/footer"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Minimalist Blog",
-    generator: 'v0.dev'
+  title: "SSTRACK BLOGS",
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({

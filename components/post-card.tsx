@@ -37,7 +37,10 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
 
   return (
     <div className="break-inside-avoid mb-6">
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group">
+      <div
+        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group"
+        style={{ border: "1.5px solid #000000" }}
+      >
         {/* Post Image */}
         {post.image && (
           <div className="relative aspect-[4/3] overflow-hidden">
@@ -53,8 +56,8 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
 
         {/* Content Block */}
         <div className="p-6 space-y-4">
-          {/* Meta Information */}
-          <div className="text-sm text-gray-500 font-light">
+          {/* Meta Information - changed from text-gray-500 to text-black */}
+          <div className="text-sm text-black font-light">
             {new Date().toLocaleDateString("en-US", {
               day: "2-digit",
               month: "long",
@@ -62,24 +65,24 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
             })}
           </div>
 
-          {/* Title */}
-          <h2 className="text-xl font-bold uppercase tracking-wide leading-tight">
-            <Link href={`/post/${post.id}`} className="hover:text-blue-600 transition-colors">
+          {/* Title - changed from text-black-xl to text-xl and ensured black color */}
+          <h2 className="text-xl font-bold uppercase tracking-wide leading-tight text-black">
+            <Link href={`/post/${post.id}`} className="hover:text-green-600 transition-colors">
               {post.title}
             </Link>
           </h2>
 
-          {/* Author and Category */}
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          {/* Author and Category - changed from text-gray-600 to text-black */}
+          <div className="flex items-center gap-2 text-sm text-black">
             <span>by {getAuthorName(post.authorId)}</span>
             <span>•</span>
-            <button onClick={() => onCategoryClick(post.categoryId)} className="hover:text-blue-600 transition-colors">
+            <button onClick={() => onCategoryClick(post.categoryId)} className="hover:text-green-600 transition-colors">
               {getCategoryName(post.categoryId)}
             </button>
           </div>
 
-          {/* Content Preview */}
-          <div className="text-gray-700 text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
+          {/* Content Preview - changed from text-gray-700 to text-black */}
+          <div className="text-black text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
 
           {/* Tags */}
           <div className="flex flex-wrap gap-2 pt-2">
@@ -87,7 +90,18 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
               <button
                 key={tag}
                 onClick={() => onTagClick(tag)}
-                className="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                style={{
+                  border: "1.5px solid #000000",
+                  backgroundColor: "white",
+                  color: "#000000",
+                  borderRadius: "999px",
+                  padding: "0.25rem 0.75rem",
+                  marginRight: "0.5rem",
+                  fontSize: "0.85rem",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
+                className="transition-colors"
               >
                 #{tag}
               </button>

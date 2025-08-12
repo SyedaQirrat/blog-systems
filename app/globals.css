@@ -13,7 +13,7 @@
   --primary: #7ACB59; /* Green for primary */
   --primary-foreground: #0E4772; /* Blue for text on green */
   --secondary: #0E4772; /* Blue for secondary */
-  --secondary-foreground: #7ACB59; /* Green for text on blue */
+  --secondary-foreground: #000000; /* Green for text on blue */
   --muted: #e6f4e9; /* Light green muted */
   --muted-foreground: #0E4772;
   --accent: #7ACB59; /* Green accent */
@@ -119,5 +119,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-color: #0E4772;
+    color: #7ACB59;
+  }
+  a {
+    color: #7ACB59;
+  }
+  button {
+    background-color: #7ACB59;
+    color: white;
+    border: 2px solid #7ACB59;
+  }
+  input, textarea, select {
+    border: 2px solid #7ACB59;
+    color: #0E4772;
+    background-color: #fff;
   }
 }

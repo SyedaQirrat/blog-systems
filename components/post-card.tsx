@@ -38,32 +38,40 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
   return (
     <div className="break-inside-avoid mb-6">
       <div
-        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-6"
+        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-0"
         style={{ border: "1.5px solid #E5E7EB" }}
       >
-        {/* Content Block */}
-        <div className="space-y-4">
-          {/* Title */}
-          <h2 className="text-xl font-bold tracking-wide leading-tight text-black">
-            <Link href={`/post/${post.id}`} className="hover:text-green-600 transition-colors">
-              {post.title}
-            </Link>
-          </h2>
-          
-          {/* Category */}
+        {/* Header with image, overlay, and title */}
+        <div className="relative w-full overflow-hidden rounded-t-lg">
+          {post.image && (
+            <Image
+              src={imageError ? getFallbackImage() : post.image}
+              alt={post.title}
+              fill
+              className="object-cover"
+              onError={handleImageError}
+            />
+          )}
+          <div className="absolute inset-0 bg-green-500 opacity-25"></div>
+          <div className="relative z-10 flex items-end p-4 min-h-[100px]">
+            <h2 className="text-xl font-bold tracking-wide leading-tight">
+              <Link href={`/post/${post.id}`} className="text-white hover:text-[#7ACB59] transition-colors">
+                {post.title}
+              </Link>
+            </h2>
+          </div>
+        </div>
+
+        {/* Main content section */}
+        <div className="p-6 space-y-4">
           <div className="text-sm text-gray-500">
             Category: <button onClick={() => onCategoryClick(post.categoryId)} className="underline text-black-600 hover:text-black transition-colors">{getCategoryName(post.categoryId)}</button>
           </div>
-
-          {/* Author */}
           <div className="text-sm text-gray-500">
             Author: {getAuthorName(post.authorId)}
           </div>
-
-          {/* Content Preview */}
           <div className="text-gray-700 text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
 
-          {/* Read More button */}
           <div className="pt-4">
             <Link
               href={`/post/${post.id}`}
@@ -72,8 +80,6 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
               Read More
             </Link>
           </div>
-
-          {/* Tags - removed as per new design */}
         </div>
       </div>
     </div>

@@ -83,21 +83,21 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="text-white py-8" style={{ backgroundColor: "#aab8f7" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#0E4772" }}>
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
         <div className="max-w-4xl mx-auto px-6">
-          <Link href="/" className="inline-flex items-center text-white hover:text-blue-200 transition-colors mb-6">
+          <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
             ← Back to Blog
           </Link>
 
-          <h1 className="text-4xl md:text-6xl font-thin mb-6">{post.title}</h1>
+          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-white">{post.title}</h1>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-100">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#7ACB59]">
             <span>by {author?.name}</span>
             <span>•</span>
             <button
               onClick={() => handleCategoryClick(post.categoryId)}
-              className="text-white hover:text-blue-200 transition-colors underline"
+              className="text-[#7ACB59] hover:text-green-200 transition-colors underline"
             >
               {category?.name}
             </button>
@@ -114,7 +114,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
       </div>
 
       {/* Main content */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-6 py-12 bg-white rounded-t-lg">
         {/* Post Image */}
         {post.image && (
           <div className="mb-12">
@@ -142,7 +142,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             <button
               key={index}
               onClick={() => handleTagClick(tag)}
-              className="px-4 py-2 bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-600 rounded-full text-sm transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-green-100 text-[#0E4772] hover:text-[#7ACB59] rounded-full text-sm transition-colors"
             >
               #{tag}
             </button>
@@ -153,7 +153,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           <Link
             href={`/manage-post/${post.id}`}
             className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
-            style={{ backgroundColor: "#aab8f7" }}
+            style={{ backgroundColor: "#7ACB59" }}
           >
             Edit Post
           </Link>

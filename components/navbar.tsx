@@ -15,6 +15,8 @@ interface NavbarProps {
   currentTag: string
   onCategoryClick: (categoryId: string) => void
   onClearFilters: () => void
+  searchQuery: string
+  onSearchChange: (query: string) => void
 }
 
 interface RippleEffect {
@@ -24,7 +26,7 @@ interface RippleEffect {
   id: number
 }
 
-export function Navbar({ categories, currentCategory, currentTag, onCategoryClick, onClearFilters }: NavbarProps) {
+export function Navbar({ categories, currentCategory, currentTag, onCategoryClick, onClearFilters, searchQuery, onSearchChange }: NavbarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [ripples, setRipples] = useState<RippleEffect[]>([])
@@ -38,7 +40,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
         const rect = containerRef.current.getBoundingClientRect()
         setDimensions({ width: rect.width, height: rect.height })
       }
-    };
+    }
 
     updateDimensions()
     window.addEventListener("resize", updateDimensions)
@@ -73,7 +75,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
           return prev
         })
       }
-    };
+    }
 
     const handleMouseEnter = () => setIsHovering(true)
     const handleMouseLeave = () => {
@@ -149,13 +151,13 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
     }
 
     return path
-  };
+  }
 
   const getLineCount = () => {
     if (dimensions.width < 640) return 12
     if (dimensions.width < 1024) return 16
     return 20
-  };
+  }
 
   const lines = Array.from({ length: getLineCount() }, (_, i) => i)
 
@@ -201,21 +203,32 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
       <div className="relative z-10">
         {/* Top navigation bar */}
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 md:py-6">
-          {/* Logo replaces "Welcome to" */}
-          <Image
-            src="/logo.png" // <-- Update with your actual logo file name
-            alt="SSTRACK BLOGS Logo"
-            width={55}
-            height={55}
-            className="mr-2"
-          />
+          {/* Logo and navigation links */}
+          <div className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="SSTRACK BLOGS Logo"
+              width={55}
+              height={55}
+              className="mr-2"
+            />
+            {/* Search Input */}
+            <input
+              type="text"
+              placeholder="Search by tag..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="px-3 py-1.5 text-sm rounded-full text-black bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
+          </div>
+
           <div className="flex space-x-4">
             <Link
               href="/manage-post/new"
               style={{
                 backgroundColor: "#7ACB59",
                 color: "white",
-                border: `2px solid #0E4772`
+                border: `2px solid #7ACB59`
               }}
               className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
             >
@@ -225,10 +238,10 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               href="/manage-post/all"
               style={{
                 backgroundColor: "#7ACB59",
-                color: "#ffffff",
-                border: `2px solid #0E4772`
+                color: "white",
+                border: `2px solid #7ACB59`
               }}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:bg-[#7ACB59] hover:text-white transition-colors cursor-pointer"
             >
               Manage Posts
             </Link>

@@ -55,6 +55,7 @@ export default function BlogPage() {
   const [currentTag, setCurrentTag] = useState<string>("")
   const [loading, setLoading] = useState(true)
   const [showDrafts, setShowDrafts] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     loadBlogData()
@@ -83,30 +84,46 @@ export default function BlogPage() {
     if (!showDrafts && !post.isPublished) {
       return false
     }
+    
+    // Filter by search query on tags
+    if (searchQuery) {
+        return post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
 
-    // Existing category and tag filters
+    // Filter by category
     if (currentCategory) {
       return post.categoryId === currentCategory
     }
+    // Filter by tag
     if (currentTag) {
       return post.tags.includes(currentTag)
     }
+    
     return true
   })
 
   const handleCategoryClick = (categoryId: string) => {
     setCurrentCategory(categoryId)
     setCurrentTag("")
+    setSearchQuery("")
   }
 
   const handleTagClick = (tag: string) => {
     setCurrentTag(tag)
     setCurrentCategory("")
+    setSearchQuery("")
+  }
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentCategory("");
+    setCurrentTag("");
   }
 
   const clearFilters = () => {
     setCurrentCategory("")
     setCurrentTag("")
+    setSearchQuery("")
   }
 
   return (
@@ -117,6 +134,8 @@ export default function BlogPage() {
         currentTag={currentTag}
         onCategoryClick={handleCategoryClick}
         onClearFilters={clearFilters}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
       />
 
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
@@ -154,7 +173,7 @@ export default function BlogPage() {
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500">
-              {currentCategory || currentTag ? "No posts found for this filter." : "No posts available."}
+              {currentCategory || currentTag || searchQuery ? "No posts found for this filter." : "No posts available."}
             </div>
           </div>
         ) : (

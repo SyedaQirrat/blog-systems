@@ -170,14 +170,14 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
-  // Show the Create Post form if no post ID is in the URL
+  // Show the Create Post form if the URL parameter is 'new'
   if (isCreating) {
     return (
       <div className="min-h-screen bg-white">
         <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
           <div className="max-w-4xl mx-auto px-6">
             <Link
-              href="/manage-post"
+              href="/manage-post/all"
               className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6"
             >
               ← Back to Manage Posts
@@ -330,7 +330,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 Create Post
               </button>
               <Link
-                href={"/"}
+                href={"/manage-post/all"}
                 className="px-8 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors rounded-lg"
               >
                 Cancel
@@ -342,7 +342,184 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     )
   }
 
-  // Show the list of all posts if not creating a new one or editing a specific one
+  // Show the edit form if a specific post ID is provided
+  if (isEditing) {
+    const post = data.posts.find((p) => p.id.toString() === postId)
+    if (!post) {
+      return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
+    }
+
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+          <div className="max-w-4xl mx-auto px-6">
+            <Link
+              href="/manage-post/all"
+              className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6"
+            >
+              ← Back to Manage Posts
+            </Link>
+            <h1 className="text-4xl md:text-6xl font-thin text-white">EDIT POST</h1>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                Title
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="Enter post title..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                Content
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                required
+                rows={12}
+                placeholder="Write your post content here..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                Image URL (optional)
+              </label>
+              <input
+                type="url"
+                id="image"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {formData.image && (
+                <div className="mt-4">
+                  <img
+                    src={formData.image || "/placeholder.svg"}
+                    alt="Preview"
+                    className="max-w-full h-48 object-cover rounded-lg border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Author
+                </label>
+                <select
+                  id="authorId"
+                  name="authorId"
+                  value={formData.authorId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select an author</option>
+                  {data.authors.map((author) => (
+                    <option key={author.authorId} value={author.authorId}>
+                      {author.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {data.categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+                Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                id="tags"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                placeholder="react, javascript, web-development"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isPublished"
+                name="isPublished"
+                checked={formData.isPublished}
+                onChange={handleCheckboxChange}
+                className="rounded text-green-600 border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+              />
+              <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
+                Published
+              </label>
+            </div>
+
+            <div className="flex gap-4 justify-center pt-8">
+              <button
+                type="submit"
+                className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
+                style={{ backgroundColor: "#7ACB59" }}
+              >
+                Update Post
+              </button>
+              <Link
+                href={"/manage-post/all"}
+                className="px-8 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors rounded-lg"
+              >
+                Cancel
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // Otherwise, show the list of all posts
   return (
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>

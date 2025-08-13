@@ -103,20 +103,20 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="text-[#0E4772] py-8" style={{ backgroundColor: "#e6f4e9" }}>
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
         <div className="max-w-4xl mx-auto px-6">
-          <Link href="/" className="inline-flex items-center text-[#0E4772] hover:text-[#7ACB59] transition-colors mb-6">
+          <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
             ← Back to Blog
           </Link>
 
-          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-[#0E4772]">{post.title}</h1>
+          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-white">{post.title}</h1>
 
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[#0E4772]">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#7ACB59]">
             <span>by {author?.name}</span>
             <span>•</span>
             <button
               onClick={() => handleCategoryClick(post.categoryId)}
-              className="text-[#0E4772] hover:text-[#7ACB59] transition-colors underline font-bold"
+              className="text-[#ffffff] hover:text-white transition-colors underline font-bold"
             >
               {category?.name}
             </button>
@@ -166,7 +166,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             <button
               key={index}
               onClick={() => handleTagClick(tag)}
-              className="px-4 py-2 bg-gray-100 hover:bg-green-100 text-[#0E4772] hover:text-[#7ACB59] rounded-full text-sm transition-colors"
+              className="px-4 py-2 bg-gray-100 hover:bg-[#7ACB59] text-[#0E4772] hover:text-white rounded-full text-sm transition-colors"
             >
               #{tag}
             </button>

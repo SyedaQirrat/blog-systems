@@ -212,10 +212,9 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               height={55}
               className="mr-2"
             />
-            {/* Search Input */}
             <input
               type="text"
-              placeholder="Search by tag"
+              placeholder="Search posts..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-full text-black bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
@@ -232,13 +231,13 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               }}
               className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
             >
-              Create Post
+              CREATE POST
             </Link>
             <Link
               href="/manage-post/all"
               style={{
-                backgroundColor: "#7ACB59",
-                color: "white",
+                backgroundColor: "transparent",
+                color: "#7ACB59",
                 border: `2px solid #7ACB59`
               }}
               className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:bg-[#7ACB59] hover:text-white transition-colors cursor-pointer"

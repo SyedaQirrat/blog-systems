@@ -85,9 +85,15 @@ export default function BlogPage() {
       return false
     }
     
-    // Filter by search query on tags
-    if (searchQuery) {
-        return post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Filter by search query on title, tags, and category
+    const matchesSearch = searchQuery
+      ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        getCategoryName(post.categoryId).toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+
+    if (!matchesSearch) {
+        return false;
     }
 
     // Filter by category
@@ -134,9 +140,20 @@ export default function BlogPage() {
         currentTag={currentTag}
         onCategoryClick={handleCategoryClick}
         onClearFilters={clearFilters}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
       />
+      
+      {/* Search bar section now located below the main heading and category filters */}
+      <section className="bg-[#0E4772] pb-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 md:px-8">
+          <input
+            type="text"
+            placeholder="Search for a blog post..."
+            value={searchQuery}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="w-full px-4 py-3 text-sm rounded-full text-black bg-white border-none focus:outline-none focus:ring-2 focus:ring-green-400"
+          />
+        </div>
+      </section>
 
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
         <div className="flex justify-between items-center mb-8">

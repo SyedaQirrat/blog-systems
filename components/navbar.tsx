@@ -215,7 +215,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
             {/* Search Input */}
             <input
               type="text"
-              placeholder="Search by tag..."
+              placeholder="Search by tag"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="px-3 py-1.5 text-sm rounded-full text-black bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"

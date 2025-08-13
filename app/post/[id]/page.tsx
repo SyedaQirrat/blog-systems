@@ -12,6 +12,8 @@ interface Post {
   authorId: string
   categoryId: string
   tags: string[]
+  isPublished?: boolean
+  publishedDate?: string
 }
 
 interface Author {
@@ -46,6 +48,10 @@ const loadBlogData = async (): Promise<BlogData> => {
   return data
 }
 
+const saveBlogData = (data: BlogData) => {
+  localStorage.setItem("blogData", JSON.stringify(data))
+}
+
 export default function PostDetail({ params }: { params: { id: string } }) {
   const [data, setData] = useState<BlogData | null>(null)
   const [imageError, setImageError] = useState(false)
@@ -54,6 +60,19 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   useEffect(() => {
     loadBlogData().then(setData)
   }, [])
+
+  const deletePost = () => {
+    if (confirm("Are you sure you want to delete this post?")) {
+      if (data) {
+        const updatedPosts = data.posts.filter(
+          (post) => post.id.toString() !== params.id
+        )
+        const updatedData = { ...data, posts: updatedPosts }
+        saveBlogData(updatedData)
+        router.push("/")
+      }
+    }
+  }
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
@@ -109,6 +128,11 @@ export default function PostDetail({ params }: { params: { id: string } }) {
                 day: "numeric",
               })}
             </span>
+            {post.isPublished ? (
+              <span className="text-[#7ACB59]">• Published</span>
+            ) : (
+              <span className="text-red-500">• Draft</span>
+            )}
           </div>
         </div>
       </div>
@@ -149,7 +173,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           ))}
         </div>
 
-        <div className="text-center">
+        <div className="flex justify-center gap-4 text-center">
           <Link
             href={`/manage-post/${post.id}`}
             className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
@@ -157,6 +181,13 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           >
             Edit Post
           </Link>
+          <button
+            onClick={deletePost}
+            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
+            style={{ backgroundColor: "#ff4d4f" }}
+          >
+            Delete Post
+          </button>
         </div>
       </div>
     </div>

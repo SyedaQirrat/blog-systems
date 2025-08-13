@@ -7,7 +7,9 @@
       "image": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "tech",
-      "tags": ["react", "javascript", "frontend"]
+      "tags": ["react", "javascript", "frontend"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": "2",
@@ -16,7 +18,9 @@
       "image": "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "productivity",
-      "tags": ["productivity", "habits", "workflow"]
+      "tags": ["productivity", "habits", "workflow"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": "3",
@@ -25,7 +29,9 @@
       "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "tech",
-      "tags": ["react", "state-management", "hooks"]
+      "tags": ["react", "state-management", "hooks"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": "4",
@@ -34,7 +40,9 @@
       "image": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["web-development", "future", "technology"]
+      "tags": ["web-development", "future", "technology"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": "5",
@@ -43,7 +51,9 @@
       "image": "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["ux", "design", "user-experience"]
+      "tags": ["ux", "design", "user-experience"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 6,
@@ -52,7 +62,9 @@
       "image": "https://images.unsplash.com/photo-1639729864275-c54d7e63b361?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["css", "frontend", "web-development"]
+      "tags": ["css", "frontend", "web-development"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 7,
@@ -61,7 +73,8 @@
       "image": "https://images.unsplash.com/photo-1510127034293-87f547c1341c?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["digital-detox", "mindfulness", "habits"]
+      "tags": ["digital-detox", "mindfulness", "habits"],
+      "isPublished": false
     },
     {
       "id": 8,
@@ -70,7 +83,9 @@
       "image": "https://images.unsplash.com/photo-1589332560882-747f11904a52?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["performance", "web-development", "seo"]
+      "tags": ["performance", "web-development", "seo"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 9,
@@ -79,7 +94,8 @@
       "image": "https://images.unsplash.com/photo-1662991039868-b78b022b7a8d?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["knowledge-management", "organization", "workflow"]
+      "tags": ["knowledge-management", "organization", "workflow"],
+      "isPublished": false
     },
     {
       "id": 10,
@@ -88,7 +104,9 @@
       "image": "https://images.unsplash.com/photo-1631481971775-6014e7a2b25b?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["nextjs", "react", "app-router"]
+      "tags": ["nextjs", "react", "app-router"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 11,
@@ -97,7 +115,9 @@
       "image": "https://images.unsplash.com/photo-1577565177085-f53835e21976?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["design", "ui/ux", "communication"]
+      "tags": ["design", "ui/ux", "communication"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 12,
@@ -106,7 +126,9 @@
       "image": "https://images.unsplash.com/photo-1618335939229-231a54728522?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["git", "collaboration", "software-development"]
+      "tags": ["git", "collaboration", "software-development"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 13,
@@ -115,7 +137,9 @@
       "image": "https://images.unsplash.com/photo-1598463162391-499385b0d00f?w=800&h=400&fit=crop&crop=center",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["pomodoro", "time-management", "focus"]
+      "tags": ["pomodoro", "time-management", "focus"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 14,
@@ -124,16 +148,20 @@
       "image": "https://images.unsplash.com/photo-1627398242493-d2d4f2b18c6d?w=800&h=400&fit=crop&crop=center",
       "authorId": "2",
       "categoryId": "tech",
-      "tags": ["typescript", "javascript", "code-quality"]
+      "tags": ["typescript", "javascript", "code-quality"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     },
     {
       "id": 15,
       "title": "The Art of Writing Effective Documentation",
       "content": "Good documentation is the cornerstone of successful projects, but it's often overlooked. This article provides a framework for creating clear, comprehensive, and user-friendly documentation. We'll cover best practices for structuring your docs, writing for different audiences, and keeping your documentation up-to-date with your codebase.",
-      "image": "https://images.unsplash.com/photo-1647413661139-44e27f549a1d?w=800&h=400&fit=crop&crop=center",
+      "image": "https://images.pexels.com/photos/6238186/pexels-photo-6238186.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
       "authorId": "1",
       "categoryId": "productivity",
-      "tags": ["documentation", "writing", "communication"]
+      "tags": ["documentation", "writing", "communication"],
+      "isPublished": true,
+      "publishedDate": "2025-08-13"
     }
   ],
   "authors": [
@@ -153,7 +181,7 @@
     },
     {
       "categoryId": "productivity",
-      "name": "Productivity"
+      "name": "Prductivity"
     }
   ]
 }

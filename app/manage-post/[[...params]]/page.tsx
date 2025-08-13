@@ -14,6 +14,8 @@ interface Post {
   authorId: string
   categoryId: string
   tags: string[]
+  isPublished?: boolean
+  publishedDate?: string
 }
 
 interface Author {
@@ -65,6 +67,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     authorId: "",
     categoryId: "",
     tags: "",
+    isPublished: false,
+    publishedDate: "",
   })
 
   useEffect(() => {
@@ -81,6 +85,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             authorId: post.authorId,
             categoryId: post.categoryId,
             tags: post.tags.join(", "),
+            isPublished: post.isPublished || false,
+            publishedDate: post.publishedDate || "",
           })
         }
       }
@@ -112,6 +118,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       authorId: formData.authorId,
       categoryId: formData.categoryId,
       tags: tags,
+      isPublished: formData.isPublished,
+      publishedDate: formData.publishedDate,
     }
 
     let updatedData: BlogData
@@ -148,6 +156,14 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }))
+  }
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked,
     }))
   }
 
@@ -286,6 +302,20 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
               placeholder="react, javascript, web-development"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="isPublished"
+              name="isPublished"
+              checked={formData.isPublished}
+              onChange={handleCheckboxChange}
+              className="rounded text-green-600 border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+            />
+            <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
+              Published
+            </label>
           </div>
 
           <div className="flex gap-4 justify-center pt-8">

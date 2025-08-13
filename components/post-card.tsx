@@ -12,6 +12,8 @@ interface Post {
   authorId: string
   categoryId: string
   tags: string[]
+  isPublished?: boolean
+  publishedDate?: string
 }
 
 interface PostCardProps {
@@ -36,13 +38,13 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
   }
 
   return (
-    <div className="break-inside-avoid mb-6">
+    <div className="flex-1 min-h-[400px]">
       <div
-        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-0"
+        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-0 h-full flex flex-col"
         style={{ border: "1.5px solid #E5E7EB" }}
       >
         {/* Header with image, overlay, and title */}
-        <div className="relative w-full overflow-hidden rounded-t-lg">
+        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
           {post.image && (
             <Image
               src={imageError ? getFallbackImage() : post.image}
@@ -52,7 +54,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
               onError={handleImageError}
             />
           )}
-          <div className="absolute inset-0 bg-green-500 opacity-25"></div>
+          <div className="absolute inset-0 bg-black opacity-30"></div>
           <div className="relative z-10 flex items-end p-4 min-h-[100px]">
             <h2 className="text-xl font-bold tracking-wide leading-tight">
               <Link href={`/post/${post.id}`} className="text-white hover:text-[#7ACB59] transition-colors">
@@ -63,16 +65,16 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
         </div>
 
         {/* Main content section */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 flex flex-col flex-grow">
           <div className="text-sm text-gray-500">
             Category: <button onClick={() => onCategoryClick(post.categoryId)} className="underline font-bold text-black-600 hover:text-black transition-colors">{getCategoryName(post.categoryId)}</button>
           </div>
           <div className="text-sm text-gray-500">
             Author: {getAuthorName(post.authorId)}
           </div>
-          <div className="text-gray-700 text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
+          <div className="text-black text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
 
-          <div className="pt-4">
+          <div className="pt-4 mt-auto">
             <Link
               href={`/post/${post.id}`}
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-black font-medium bg-white hover:bg-gray-100 transition rounded-md"

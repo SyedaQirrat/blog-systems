@@ -13,6 +13,8 @@ interface Post {
   authorId: string
   categoryId: string
   tags: string[]
+  isPublished?: boolean
+  publishedDate?: string
 }
 
 interface Author {
@@ -76,6 +78,11 @@ export default function BlogPage() {
   }
 
   const filteredPosts = data.posts.filter((post) => {
+    // Only show published posts
+    if (!post.isPublished) {
+      return false
+    }
+    
     if (currentCategory) {
       return post.categoryId === currentCategory
     }

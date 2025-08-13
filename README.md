@@ -1,4 +1,4 @@
-# Minimalist Blog System
+# SSTRACKBlog System
 
 A clean, typography-driven blog application built with Next.js, featuring a minimalist design inspired by modern content-focused websites. The application emphasizes readability, simplicity, and an elegant user experience across all devices.
 

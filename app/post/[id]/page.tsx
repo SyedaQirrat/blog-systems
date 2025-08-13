@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 
 interface Post {
   id: number
   title: string
   content: string
-  image: string
+  image: string[] | string
   authorId: string
   categoryId: string
   tags: string[]
@@ -101,6 +102,8 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
+  const images = Array.isArray(post.image) ? post.image : [post.image];
+
   return (
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
@@ -116,7 +119,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             <span>•</span>
             <button
               onClick={() => handleCategoryClick(post.categoryId)}
-              className="text-[#ffffff] hover:text-white transition-colors underline font-bold"
+              className="text-[#7ACB59] hover:text-green-200 transition-colors underline font-bold"
             >
               {category?.name}
             </button>
@@ -139,15 +142,19 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
       {/* Main content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Post Image */}
-        {post.image && (
-          <div className="mb-12">
-            <img
-              src={imageError ? getFallbackImage() : post.image}
-              alt={post.title}
-              className="w-full h-96 object-cover rounded-lg"
-              onError={handleImageError}
-            />
+        {/* Post Images */}
+        {images.length > 0 && (
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {images.map((imgSrc, index) => (
+              <div key={index} className="relative w-full aspect-[4/3]">
+                <Image
+                  src={imgSrc}
+                  alt={`${post.title} image ${index + 1}`}
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
+            ))}
           </div>
         )}
 

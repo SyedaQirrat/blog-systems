@@ -8,7 +8,7 @@ interface Post {
   id: number
   title: string
   content: string
-  image: string
+  image: string[]
   authorId: string
   categoryId: string
   tags: string[]
@@ -45,9 +45,9 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
       >
         {/* Header with image, overlay, and title */}
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
-          {post.image && (
+          {post.image && post.image.length > 0 && (
             <Image
-              src={imageError ? getFallbackImage() : post.image}
+              src={imageError ? getFallbackImage() : post.image[0]}
               alt={post.title}
               fill
               className="object-cover"
@@ -75,6 +75,9 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
           <div className="text-black text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
 
           <div className="pt-4 mt-auto">
+            {!post.isPublished && (
+              <span className="inline-block bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">DRAFT</span>
+            )}
             <Link
               href={`/post/${post.id}`}
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-black font-medium bg-white hover:bg-gray-100 transition rounded-md"

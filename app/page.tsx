@@ -9,7 +9,7 @@ interface Post {
   id: number
   title: string
   content: string
-  image: string
+  image: string[]
   authorId: string
   categoryId: string
   tags: string[]

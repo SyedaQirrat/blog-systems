@@ -10,7 +10,7 @@ interface Post {
   id: number
   title: string
   content: string
-  image: string
+  image: string[]
   authorId: string
   categoryId: string
   tags: string[]
@@ -64,7 +64,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   const [formData, setFormData] = useState({
     title: "",
     content: "",
-    image: "",
+    image: [""],
     authorId: "",
     categoryId: "",
     tags: "",
@@ -82,7 +82,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           setFormData({
             title: post.title,
             content: post.content,
-            image: post.image || "",
+            image: Array.isArray(post.image) ? post.image : [post.image],
             authorId: post.authorId,
             categoryId: post.categoryId,
             tags: post.tags.join(", "),
@@ -110,12 +110,14 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       .split(",")
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0)
+    
+    const images = formData.image.filter(url => url.length > 0);
 
     const postData = {
       id: isEditing ? Number.parseInt(postId!) : generateUniqueId(),
       title: formData.title,
       content: formData.content,
-      image: formData.image,
+      image: images,
       authorId: formData.authorId,
       categoryId: formData.categoryId,
       tags: tags,
@@ -158,6 +160,21 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       ...prev,
       [name]: value,
     }))
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const newImages = [...formData.image];
+    newImages[index] = e.target.value;
+    setFormData(prev => ({ ...prev, image: newImages }));
+  }
+
+  const handleAddImage = () => {
+    setFormData(prev => ({ ...prev, image: [...prev.image, ""] }));
+  }
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = formData.image.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, image: newImages }));
   }
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -222,30 +239,26 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             </div>
 
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Image URL (optional)
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image URLs
               </label>
-              <input
-                type="url"
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              {formData.image && (
-                <div className="mt-4">
-                  <img
-                    src={formData.image || "/placeholder.svg"}
-                    alt="Preview"
-                    className="max-w-full h-48 object-cover rounded-lg border"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
+              {formData.image.map((imageUrl, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => handleImageChange(e, index)}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
+                    Remove
+                  </button>
                 </div>
-              )}
+              ))}
+              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
+                Add Image
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -399,30 +412,26 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             </div>
 
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-                Image URL (optional)
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image URLs
               </label>
-              <input
-                type="url"
-                id="image"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              {formData.image && (
-                <div className="mt-4">
-                  <img
-                    src={formData.image || "/placeholder.svg"}
-                    alt="Preview"
-                    className="max-w-full h-48 object-cover rounded-lg border"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none"
-                    }}
+              {formData.image.map((imageUrl, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => handleImageChange(e, index)}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
+                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
+                    Remove
+                  </button>
                 </div>
-              )}
+              ))}
+              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
+                Add Image
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -524,6 +533,12 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
         <div className="max-w-4xl mx-auto px-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6"
+          >
+            ← Back to Blog
+          </Link>
           <h1 className="text-4xl md:text-6xl font-thin text-white">Manage Posts</h1>
         </div>
       </div>

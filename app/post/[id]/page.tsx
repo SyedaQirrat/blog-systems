@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 
+interface PostContent {
+  type: "text" | "image";
+  value: string;
+}
+
 interface Post {
   id: number
   title: string
-  content: string
+  content: PostContent[] | string
   image: string[] | string
   authorId: string
   categoryId: string
@@ -103,6 +108,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   const images = Array.isArray(post.image) ? post.image : [post.image];
+  const contentBlocks = Array.isArray(post.content) ? post.content : post.content.split("\n").map(text => ({ type: 'text', value: text }));
 
   return (
     <div className="min-h-screen bg-white">
@@ -160,11 +166,23 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
         {/* Post Content */}
         <div className="prose prose-lg max-w-none mb-12">
-          {post.content.split("\n").map((paragraph, index) => (
-            <p key={index} className="mb-6 text-black leading-relaxed">
-              {paragraph}
-            </p>
-          ))}
+          {contentBlocks.map((block, index) => {
+            if (block.type === 'text') {
+              return (
+                <p key={index} className="mb-6 text-black leading-relaxed">
+                  {block.value}
+                </p>
+              );
+            }
+            if (block.type === 'image') {
+              return (
+                <div key={index} className="my-6">
+                  <img src={block.value} alt="" className="w-full rounded-lg" />
+                </div>
+              );
+            }
+            return null;
+          })}
         </div>
 
         {/* Tags */}

@@ -4,11 +4,16 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 
+interface PostContent {
+  type: "text" | "image";
+  value: string;
+}
+
 interface Post {
   id: number
   title: string
-  content: string
-  image: string[]
+  content: PostContent[] | string
+  image: string[] | string
   authorId: string
   categoryId: string
   tags: string[]
@@ -37,6 +42,13 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
     return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
   }
 
+  const images = Array.isArray(post.image) ? post.image : [post.image];
+  const firstImage = images.length > 0 ? images[0] : null;
+
+  const contentText = Array.isArray(post.content) ? 
+    post.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : 
+    post.content;
+    
   return (
     <div className="flex-1 min-h-[400px]">
       <div
@@ -45,9 +57,9 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
       >
         {/* Header with image, overlay, and title */}
         <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
-          {post.image && post.image.length > 0 && (
+          {firstImage && (
             <Image
-              src={imageError ? getFallbackImage() : post.image[0]}
+              src={imageError ? getFallbackImage() : firstImage}
               alt={post.title}
               fill
               className="object-cover"
@@ -72,7 +84,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
           <div className="text-sm text-gray-500">
             Author: {getAuthorName(post.authorId)}
           </div>
-          <div className="text-black text-sm leading-relaxed">{post.content.substring(0, 150)}...</div>
+          <div className="text-black text-sm leading-relaxed">{contentText.substring(0, 150)}...</div>
 
           <div className="pt-4 mt-auto">
             {!post.isPublished && (

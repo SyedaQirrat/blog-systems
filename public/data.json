@@ -44,6 +44,96 @@
       "authorId": "1",
       "categoryId": "productivity",
       "tags": ["ux", "design", "user-experience"]
+    },
+    {
+      "id": 6,
+      "title": "A Guide to Modern CSS Layouts",
+      "content": "CSS Grid and Flexbox have transformed the way we build layouts on the web. This guide will walk you through the fundamentals of both, providing practical examples and best practices for creating responsive and dynamic designs. We'll cover everything from basic alignment to complex grid systems, helping you master modern CSS techniques for a cleaner, more maintainable codebase.",
+      "image": "https://images.unsplash.com/photo-1639729864275-c54d7e63b361?w=800&h=400&fit=crop&crop=center",
+      "authorId": "2",
+      "categoryId": "tech",
+      "tags": ["css", "frontend", "web-development"]
+    },
+    {
+      "id": 7,
+      "title": "The Power of a Digital Detox",
+      "content": "In a world constantly connected, taking a break from screens can significantly boost your productivity and mental well-being. A digital detox isn't about abandoning technology forever, but about mindfully reducing your consumption to reclaim your focus and time. We'll explore strategies for setting boundaries, finding fulfilling offline activities, and making your relationship with technology healthier.",
+      "image": "https://images.unsplash.com/photo-1510127034293-87f547c1341c?w=800&h=400&fit=crop&crop=center",
+      "authorId": "1",
+      "categoryId": "productivity",
+      "tags": ["digital-detox", "mindfulness", "habits"]
+    },
+    {
+      "id": 8,
+      "title": "Optimizing Web Performance for a Faster Site",
+      "content": "Page load speed is a critical factor for both user experience and SEO. This article dives into key web performance optimization techniques, including lazy loading images, code splitting, and using a Content Delivery Network (CDN). Learn how to analyze your site's performance, identify bottlenecks, and implement changes that will make your website lightning fast.",
+      "image": "https://images.unsplash.com/photo-1589332560882-747f11904a52?w=800&h=400&fit=crop&crop=center",
+      "authorId": "2",
+      "categoryId": "tech",
+      "tags": ["performance", "web-development", "seo"]
+    },
+    {
+      "id": 9,
+      "title": "How to Build a Personal Knowledge Management System",
+      "content": "A Personal Knowledge Management (PKM) system helps you capture, organize, and retrieve information efficiently. We'll discuss various tools and methods, such as the Zettelkasten method and digital note-taking apps like Obsidian and Notion, to help you build a system that works for you. A good PKM system is a powerful tool for learning, thinking, and creating.",
+      "image": "https://images.unsplash.com/photo-1662991039868-b78b022b7a8d?w=800&h=400&fit=crop&crop=center",
+      "authorId": "1",
+      "categoryId": "productivity",
+      "tags": ["knowledge-management", "organization", "workflow"]
+    },
+    {
+      "id": 10,
+      "title": "Introduction to Next.js App Router",
+      "content": "Next.js 14 introduced the new App Router, a powerful paradigm shift for building React applications. This post provides a comprehensive introduction to the App Router's key concepts, including Server Components, layouts, and data fetching. We'll explore how to structure your projects, manage state, and build highly performant, SEO-friendly web applications.",
+      "image": "https://images.unsplash.com/photo-1631481971775-6014e7a2b25b?w=800&h=400&fit=crop&crop=center",
+      "authorId": "2",
+      "categoryId": "tech",
+      "tags": ["nextjs", "react", "app-router"]
+    },
+    {
+      "id": 11,
+      "title": "Design Principles for Non-Designers",
+      "content": "Good design is more than just aesthetics; it's about clear communication and usability. This article breaks down fundamental design principles like hierarchy, contrast, and alignment in simple terms. Whether you're a developer or a content creator, understanding these concepts will help you create more effective and visually appealing digital products.",
+      "image": "https://images.unsplash.com/photo-1577565177085-f53835e21976?w=800&h=400&fit=crop&crop=center",
+      "authorId": "1",
+      "categoryId": "productivity",
+      "tags": ["design", "ui/ux", "communication"]
+    },
+    {
+      "id": 12,
+      "title": "Mastering Git for Team Collaboration",
+      "content": "Git is an essential tool for modern software development, but mastering it can be a challenge. This guide covers best practices for branching, merging, and resolving conflicts in a collaborative environment. We'll also explore advanced commands and workflows that will make you a more confident and efficient team member.",
+      "image": "https://images.unsplash.com/photo-1618335939229-231a54728522?w=800&h=400&fit=crop&crop=center",
+      "authorId": "2",
+      "categoryId": "tech",
+      "tags": ["git", "collaboration", "software-development"]
+    },
+    {
+      "id": 13,
+      "title": "The Pomodoro Technique: A Guide to Focused Work",
+      "content": "Struggling with focus and procrastination? The Pomodoro Technique is a simple time management method that uses a timer to break down work into intervals, traditionally 25 minutes in length, separated by short breaks. This article provides a step-by-step guide on how to implement this technique to boost your concentration and get more done.",
+      "image": "https://images.unsplash.com/photo-1598463162391-499385b0d00f?w=800&h=400&fit=crop&crop=center",
+      "authorId": "1",
+      "categoryId": "productivity",
+      "tags": ["pomodoro", "time-management", "focus"]
+    },
+    {
+      "id": 14,
+      "title": "Why TypeScript is Essential for Large-Scale Projects",
+      "content": "TypeScript adds static typing to JavaScript, providing developers with a powerful tool for building more robust and maintainable codebases. This post explores the benefits of using TypeScript, including improved code quality, better tooling, and enhanced team collaboration. We'll also cover key features like interfaces, generics, and type inference.",
+      "image": "https://images.unsplash.com/photo-1627398242493-d2d4f2b18c6d?w=800&h=400&fit=crop&crop=center",
+      "authorId": "2",
+      "categoryId": "tech",
+      "tags": ["typescript", "javascript", "code-quality"]
+    },
+    {
+      "id": 15,
+      "title": "The Art of Writing Effective Documentation",
+      "content": "Good documentation is the cornerstone of successful projects, but it's often overlooked. This article provides a framework for creating clear, comprehensive, and user-friendly documentation. We'll cover best practices for structuring your docs, writing for different audiences, and keeping your documentation up-to-date with your codebase.",
+      "image": "https://images.unsplash.com/photo-1647413661139-44e27f549a1d?w=800&h=400&fit=crop&crop=center",
+      "authorId": "1",
+      "categoryId": "productivity",
+      "tags": ["documentation", "writing", "communication"]
     }
   ],
   "authors": [

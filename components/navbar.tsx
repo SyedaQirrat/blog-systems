@@ -38,7 +38,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
         const rect = containerRef.current.getBoundingClientRect()
         setDimensions({ width: rect.width, height: rect.height })
       }
-    }
+    };
 
     updateDimensions()
     window.addEventListener("resize", updateDimensions)
@@ -73,7 +73,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
           return prev
         })
       }
-    }
+    };
 
     const handleMouseEnter = () => setIsHovering(true)
     const handleMouseLeave = () => {
@@ -149,13 +149,13 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
     }
 
     return path
-  }
+  };
 
   const getLineCount = () => {
     if (dimensions.width < 640) return 12
     if (dimensions.width < 1024) return 16
     return 20
-  }
+  };
 
   const lines = Array.from({ length: getLineCount() }, (_, i) => i)
 
@@ -209,24 +209,36 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
             height={55}
             className="mr-2"
           />
-
-          <Link
-            href="/manage-post"
-            style={{
-              backgroundColor: "#7ACB59",
-              color: "white",
-              border: `2px solid #7ACB59`
-            }}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
-          >
-            CREATE POST
-          </Link>
+          <div className="flex space-x-4">
+            <Link
+              href="/manage-post/new"
+              style={{
+                backgroundColor: "#7ACB59",
+                color: "white",
+                border: `2px solid #0E4772`
+              }}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+            >
+              Create Post
+            </Link>
+            <Link
+              href="/manage-post/all"
+              style={{
+                backgroundColor: "#7ACB59",
+                color: "#ffffff",
+                border: `2px solid #0E4772`
+              }}
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+            >
+              Manage Posts
+            </Link>
+          </div>
         </div>
 
         <div className="text-center px-4 sm:px-6 md:px-8 pb-8 md:pb-12">
           <h1
             className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-thin tracking-tight leading-none"
-            style={{ color: "#7ACB59" }} 
+            style={{ color: "#7ACB59" }}
           >
             SSTRACK BLOGS
           </h1>

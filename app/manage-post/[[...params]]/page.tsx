@@ -57,7 +57,8 @@ const saveBlogData = (data: BlogData) => {
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
   const postId = params?.params?.[0]
-  const isEditing = !!postId
+  const isEditing = !!postId && postId !== 'all' && postId !== 'new'
+  const isCreating = postId === 'new'
 
   const [data, setData] = useState<BlogData | null>(null)
   const [formData, setFormData] = useState({
@@ -169,171 +170,219 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
+  // Show the Create Post form if no post ID is in the URL
+  if (isCreating) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+          <div className="max-w-4xl mx-auto px-6">
+            <Link
+              href="/manage-post"
+              className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6"
+            >
+              ← Back to Manage Posts
+            </Link>
+            <h1 className="text-4xl md:text-6xl font-thin text-white">CREATE POST</h1>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                Title
+              </label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                placeholder="Enter post title..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                Content
+              </label>
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleChange}
+                required
+                rows={12}
+                placeholder="Write your post content here..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+                Image URL (optional)
+              </label>
+              <input
+                type="url"
+                id="image"
+                name="image"
+                value={formData.image}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {formData.image && (
+                <div className="mt-4">
+                  <img
+                    src={formData.image || "/placeholder.svg"}
+                    alt="Preview"
+                    className="max-w-full h-48 object-cover rounded-lg border"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none"
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Author
+                </label>
+                <select
+                  id="authorId"
+                  name="authorId"
+                  value={formData.authorId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select an author</option>
+                  {data.authors.map((author) => (
+                    <option key={author.authorId} value={author.authorId}>
+                      {author.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {data.categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
+                Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                id="tags"
+                name="tags"
+                value={formData.tags}
+                onChange={handleChange}
+                placeholder="react, javascript, web-development"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isPublished"
+                name="isPublished"
+                checked={formData.isPublished}
+                onChange={handleCheckboxChange}
+                className="rounded text-green-600 border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+              />
+              <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
+                Published
+              </label>
+            </div>
+
+            <div className="flex gap-4 justify-center pt-8">
+              <button
+                type="submit"
+                className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
+                style={{ backgroundColor: "#7ACB59" }}
+              >
+                Create Post
+              </button>
+              <Link
+                href={"/"}
+                className="px-8 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors rounded-lg"
+              >
+                Cancel
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // Show the list of all posts if not creating a new one or editing a specific one
   return (
     <div className="min-h-screen bg-white">
-      <div className="text-white py-8" style={{ backgroundColor: "#aab8f7" }}>
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
         <div className="max-w-4xl mx-auto px-6">
-          <Link
-            href={isEditing ? `/post/${postId}` : "/"}
-            className="inline-flex items-center text-white hover:text-blue-200 transition-colors mb-6"
-          >
-            ← Back
-          </Link>
-          <h1 className="text-4xl md:text-6xl font-thin">{isEditing ? "EDIT POST" : "CREATE POST"}</h1>
+          <h1 className="text-4xl md:text-6xl font-thin text-white">Manage Posts</h1>
         </div>
       </div>
 
-      {/* Form */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-              Title
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              placeholder="Enter post title..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-              Content
-            </label>
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              required
-              rows={12}
-              placeholder="Write your post content here..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
-              Image URL (optional)
-            </label>
-            <input
-              type="url"
-              id="image"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            {formData.image && (
-              <div className="mt-4">
-                <img
-                  src={formData.image || "/placeholder.svg"}
-                  alt="Preview"
-                  className="max-w-full h-48 object-cover rounded-lg border"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none"
-                  }}
-                />
+        <div className="mb-6 flex justify-end">
+          <Link
+            href="/manage-post/new"
+            className="inline-block px-4 py-2 text-white hover:opacity-90 transition-opacity rounded-lg"
+            style={{ backgroundColor: "#7ACB59" }}
+          >
+            Create New Post
+          </Link>
+        </div>
+        <ul className="space-y-4">
+          {data.posts.map((post) => (
+            <li key={post.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+              <div className="flex justify-between items-center">
+                <div>
+                  <Link href={`/manage-post/${post.id}`} className="text-lg font-bold text-gray-800 hover:text-blue-500">
+                    {post.title}
+                  </Link>
+                  <p className="text-sm text-gray-500">
+                    {post.isPublished ? "Published" : "Draft"}
+                  </p>
+                </div>
+                <Link
+                  href={`/manage-post/${post.id}`}
+                  className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  Edit
+                </Link>
               </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
-                Author
-              </label>
-              <select
-                id="authorId"
-                name="authorId"
-                value={formData.authorId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select an author</option>
-                {data.authors.map((author) => (
-                  <option key={author.authorId} value={author.authorId}>
-                    {author.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                id="categoryId"
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a category</option>
-                {data.categories.map((category) => (
-                  <option key={category.categoryId} value={category.categoryId}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-              Tags (comma-separated)
-            </label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              value={formData.tags}
-              onChange={handleChange}
-              placeholder="react, javascript, web-development"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="isPublished"
-              name="isPublished"
-              checked={formData.isPublished}
-              onChange={handleCheckboxChange}
-              className="rounded text-green-600 border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-            />
-            <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
-              Published
-            </label>
-          </div>
-
-          <div className="flex gap-4 justify-center pt-8">
-            <button
-              type="submit"
-              className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
-              style={{ backgroundColor: "#aab8f7" }}
-            >
-              {isEditing ? "Update Post" : "Create Post"}
-            </button>
-            <Link
-              href={isEditing ? `/post/${postId}` : "/"}
-              className="px-8 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors rounded-lg"
-            >
-              Cancel
-            </Link>
-          </div>
-        </form>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )

@@ -54,6 +54,7 @@ export default function BlogPage() {
   const [currentCategory, setCurrentCategory] = useState<string>("")
   const [currentTag, setCurrentTag] = useState<string>("")
   const [loading, setLoading] = useState(true)
+  const [showDrafts, setShowDrafts] = useState(false)
 
   useEffect(() => {
     loadBlogData()
@@ -78,11 +79,12 @@ export default function BlogPage() {
   }
 
   const filteredPosts = data.posts.filter((post) => {
-    // Only show published posts
-    if (!post.isPublished) {
+    // Filter by publish status
+    if (!showDrafts && !post.isPublished) {
       return false
     }
-    
+
+    // Existing category and tag filters
     if (currentCategory) {
       return post.categoryId === currentCategory
     }
@@ -118,17 +120,32 @@ export default function BlogPage() {
       />
 
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        {/* Active filter indicator */}
-        {(currentCategory || currentTag) && (
-          <div className="mb-8 flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {currentCategory ? `Category: ${getCategoryName(currentCategory)}` : `Tag: ${currentTag}`}
-            </span>
-            <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
-              Clear filter
-            </button>
+        <div className="flex justify-between items-center mb-8">
+          {/* Active filter indicator */}
+          {(currentCategory || currentTag) && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {currentCategory ? `Category: ${getCategoryName(currentCategory)}` : `Tag: ${currentTag}`}
+              </span>
+              <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
+                Clear filter
+              </button>
+            </div>
+          )}
+
+          {/* Toggle for draft posts */}
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="showDrafts"
+              checked={showDrafts}
+              onChange={(e) => setShowDrafts(e.target.checked)}
+            />
+            <label htmlFor="showDrafts" className="text-sm text-gray-600">
+              Show Drafts
+            </label>
           </div>
-        )}
+        </div>
 
         {loading ? (
           <div className="text-center py-12">

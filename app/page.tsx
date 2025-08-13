@@ -85,9 +85,15 @@ export default function BlogPage() {
       return false
     }
     
-    // Filter by search query on tags
-    if (searchQuery) {
-        return post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Filter by search query on title, tags, and category
+    const matchesSearch = searchQuery
+      ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        getCategoryName(post.categoryId).toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+
+    if (!matchesSearch) {
+        return false;
     }
 
     // Filter by category
@@ -134,36 +140,35 @@ export default function BlogPage() {
         currentTag={currentTag}
         onCategoryClick={handleCategoryClick}
         onClearFilters={clearFilters}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
       />
-
+      
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        <div className="flex justify-between items-center mb-8">
-          {/* Active filter indicator */}
-          {(currentCategory || currentTag) && (
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {currentCategory ? `Category: ${getCategoryName(currentCategory)}` : `Tag: ${currentTag}`}
-              </span>
-              <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
-                Clear filter
-              </button>
+        <div className="flex flex-col-reverse md:flex-row md:items-center justify-between mb-8">
+            <div className="flex items-center space-x-4 mt-4 md:mt-0">
+                {/* Show Drafts Toggle */}
+                <div className="flex items-center gap-2">
+                    <input
+                    type="checkbox"
+                    id="showDrafts"
+                    checked={showDrafts}
+                    onChange={(e) => setShowDrafts(e.target.checked)}
+                    />
+                    <label htmlFor="showDrafts" className="text-sm text-gray-600">
+                    Show Drafts
+                    </label>
+                </div>
             </div>
-          )}
-
-          {/* Toggle for draft posts */}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="showDrafts"
-              checked={showDrafts}
-              onChange={(e) => setShowDrafts(e.target.checked)}
-            />
-            <label htmlFor="showDrafts" className="text-sm text-gray-600">
-              Show Drafts
-            </label>
-          </div>
+            
+            {/* Search Bar */}
+            <div className="w-full md:w-auto">
+                <input
+                    type="text"
+                    placeholder="Search posts..."
+                    value={searchQuery}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="w-full md:max-w-md mx-auto px-4 py-2 text-sm rounded-full text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+                />
+            </div>
         </div>
 
         {loading ? (

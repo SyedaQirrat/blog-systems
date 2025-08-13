@@ -15,8 +15,6 @@ interface NavbarProps {
   currentTag: string
   onCategoryClick: (categoryId: string) => void
   onClearFilters: () => void
-  searchQuery: string
-  onSearchChange: (query: string) => void
 }
 
 interface RippleEffect {
@@ -26,7 +24,7 @@ interface RippleEffect {
   id: number
 }
 
-export function Navbar({ categories, currentCategory, currentTag, onCategoryClick, onClearFilters, searchQuery, onSearchChange }: NavbarProps) {
+export function Navbar({ categories, currentCategory, currentTag, onCategoryClick, onClearFilters }: NavbarProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [ripples, setRipples] = useState<RippleEffect[]>([])
@@ -211,13 +209,6 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               width={55}
               height={55}
               className="mr-2"
-            />
-            <input
-              type="text"
-              placeholder="Search posts..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-full text-black bg-white border border-transparent focus:outline-none focus:ring-2 focus:ring-green-400"
             />
           </div>
 

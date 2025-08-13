@@ -84,7 +84,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="text-[#0E4772] py-8" style={{ backgroundColor: "#ffffff" }}>
+      <div className="text-[#0E4772] py-8" style={{ backgroundColor: "#e6f4e9" }}>
         <div className="max-w-4xl mx-auto px-6">
           <Link href="/" className="inline-flex items-center text-[#0E4772] hover:text-[#7ACB59] transition-colors mb-6">
             ← Back to Blog
@@ -97,7 +97,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             <span>•</span>
             <button
               onClick={() => handleCategoryClick(post.categoryId)}
-              className="text-[#0E4772] hover:text-[#7ACB59] transition-colors underline"
+              className="text-[#0E4772] hover:text-[#7ACB59] transition-colors underline font-bold"
             >
               {category?.name}
             </button>
@@ -130,7 +130,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         {/* Post Content */}
         <div className="prose prose-lg max-w-none mb-12">
           {post.content.split("\n").map((paragraph, index) => (
-            <p key={index} className="mb-6 text-gray-700 leading-relaxed">
+            <p key={index} className="mb-6 text-black leading-relaxed">
               {paragraph}
             </p>
           ))}

@@ -69,6 +69,114 @@ const saveBlogData = (data: BlogData) => {
   localStorage.setItem("blogData", JSON.stringify(data))
 }
 
+const renderMarkdown = (text: string) => {
+  const lines = text.split('\n');
+  const renderedContent: React.ReactNode[] = [];
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
+      inList = false;
+    }
+  };
+
+  lines.forEach((line, index) => {
+    if (line.startsWith('* ')) {
+      if (!inList) {
+        renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
+        inList = true;
+      }
+      const listItemText = line.substring(2);
+      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
+      return;
+    } else {
+      closeList();
+    }
+
+    if (line.startsWith('1. ')) {
+      if (!inList) {
+        renderedContent.push(React.createElement('ol', { key: `ol-${renderedContent.length}` }));
+        inList = true;
+      }
+      const listItemText = line.substring(3);
+      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
+      return;
+    } else {
+      closeList();
+    }
+
+    if (line.startsWith('# ')) {
+      renderedContent.push(React.createElement('h1', { key: `h1-${index}` }, line.substring(2)));
+      return;
+    }
+    if (line.startsWith('## ')) {
+      renderedContent.push(React.createElement('h2', { key: `h2-${index}` }, line.substring(3)));
+      return;
+    }
+    if (line.startsWith('### ')) {
+      renderedContent.push(React.createElement('h3', { key: `h3-${index}` }, line.substring(4)));
+      return;
+    }
+    if (line.startsWith('> ')) {
+      renderedContent.push(React.createElement('blockquote', { key: `blockquote-${index}` }, line.substring(2)));
+      return;
+    }
+    if (line.startsWith('---')) {
+      renderedContent.push(React.createElement('hr', { key: `hr-${index}` }));
+      return;
+    }
+
+    let textToRender: React.ReactNode[] = [];
+    let remainingText = line;
+    let match;
+
+    // Bold, Italic, Underline, Strikethrough, Code, Links
+    const regex = /(\*\*.*?\*\*|\*.*?\*|<u>.*?<\/u>|~~.*?~~|`.*?`|\[.*?\]\(.*?\))/g;
+    let lastIndex = 0;
+
+    while ((match = regex.exec(remainingText)) !== null) {
+        const precedingText = remainingText.substring(lastIndex, match.index);
+        if (precedingText) {
+            textToRender.push(precedingText);
+        }
+
+        const matchedText = match[0];
+        if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
+            textToRender.push(React.createElement('strong', { key: `bold-${index}-${match.index}` }, matchedText.slice(2, -2)));
+        } else if (matchedText.startsWith('*') && matchedText.endsWith('*')) {
+            textToRender.push(React.createElement('em', { key: `italic-${index}-${match.index}` }, matchedText.slice(1, -1)));
+        } else if (matchedText.startsWith('<u>') && matchedText.endsWith('</u>')) {
+            textToRender.push(React.createElement('u', { key: `underline-${index}-${match.index}` }, matchedText.slice(3, -4)));
+        } else if (matchedText.startsWith('~~') && matchedText.endsWith('~~')) {
+            textToRender.push(React.createElement('s', { key: `strikethrough-${index}-${match.index}` }, matchedText.slice(2, -2)));
+        } else if (matchedText.startsWith('`') && matchedText.endsWith('`')) {
+            textToRender.push(React.createElement('code', { key: `code-${index}-${match.index}` }, matchedText.slice(1, -1)));
+        } else if (matchedText.startsWith('[') && matchedText.includes('](') && matchedText.endsWith(')')) {
+            const linkText = matchedText.substring(1, matchedText.indexOf(']'));
+            const linkUrl = matchedText.substring(matchedText.indexOf('](') + 2, matchedText.length - 1);
+            textToRender.push(React.createElement('a', { key: `link-${index}-${match.index}`, href: linkUrl }, linkText));
+        } else {
+            textToRender.push(matchedText);
+        }
+        lastIndex = regex.lastIndex;
+    }
+
+    const remaining = remainingText.substring(lastIndex);
+    if (remaining) {
+        textToRender.push(remaining);
+    }
+    
+    if (textToRender.length > 0) {
+      renderedContent.push(React.createElement('p', { key: `p-${index}` }, ...textToRender));
+    }
+  });
+
+  closeList();
+
+  return <div className="prose prose-lg max-w-none mb-12">{renderedContent}</div>;
+};
+
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
   const postId = params?.params?.[0]
@@ -175,7 +283,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | React.ChangeEvent<HTMLSelectElement>>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
@@ -334,121 +442,161 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
-              {formData.content.map((block, index) => (
-                <div key={index} className="space-y-2 mb-4">
-                  {block.type === 'text' ? (
-                    <div className="border border-gray-300 rounded-lg p-2">
-                      <div className="flex space-x-2 mb-2">
-                        <div className="relative">
-                          <select className="px-2 py-1 text-xs bg-gray-200 rounded">
-                            <option>Paragraph</option>
-                            <option>H1</option>
-                            <option>H2</option>
-                            <option>H3</option>
-                          </select>
+            <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Content Editor
+                    </label>
+                    {formData.content.map((block, index) => (
+                        <div key={index} className="space-y-2 mb-4">
+                            {block.type === 'text' ? (
+                                <div className="border border-gray-300 rounded-lg p-2">
+                                    <div className="flex space-x-2 mb-2">
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('h1', index)}
+                                        >
+                                            H1
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('h2', index)}
+                                        >
+                                            H2
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('h3', index)}
+                                        >
+                                            H3
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('bold', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faBold} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('italic', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faItalic} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('underline', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faUnderline} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('strikethrough', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faStrikethrough} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('code', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faCode} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('list-ul', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faListUl} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('list-ol', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faListOl} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('quote', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faQuoteRight} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('link', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faLink} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                            onClick={() => handleFormatText('image', index)}
+                                        >
+                                            <FontAwesomeIcon icon={faImage} />
+                                        </button>
+                                    </div>
+                                    <textarea
+                                        id={`content-${index}`}
+                                        value={block.value}
+                                        onChange={(e) => handleContentChange(e, index)}
+                                        rows={4}
+                                        placeholder="Write your post content here..."
+                                        className="w-full px-4 py-3 border-none focus:outline-none"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="url"
+                                        value={block.value}
+                                        onChange={(e) => {
+                                            const newContent = [...formData.content];
+                                            newContent[index] = { type: 'image', value: e.target.value };
+                                            setFormData(prev => ({ ...prev, content: newContent }));
+                                        }}
+                                        placeholder="https://example.com/image.jpg"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500 hover:text-red-700">
+                                        <FontAwesomeIcon icon={faTimes} />
+                                    </button>
+                                </div>
+                            )}
+                            <div className="flex gap-2 justify-center">
+                                <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500">Remove Block</button>
+                                <button type="button" onClick={() => handleAddContentBlock("text", index)} className="text-blue-500">Add Text</button>
+                                <button type="button" onClick={() => handleAddContentBlock("image", index)} className="text-blue-500">Add Image</button>
+                            </div>
                         </div>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('bold', index)}
-                        >
-                          <FontAwesomeIcon icon={faBold} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('italic', index)}
-                        >
-                          <FontAwesomeIcon icon={faItalic} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('underline', index)}
-                        >
-                          <FontAwesomeIcon icon={faUnderline} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('strikethrough', index)}
-                        >
-                          <FontAwesomeIcon icon={faStrikethrough} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('code', index)}
-                        >
-                          <FontAwesomeIcon icon={faCode} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('list-ul', index)}
-                        >
-                          <FontAwesomeIcon icon={faListUl} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('list-ol', index)}
-                        >
-                          <FontAwesomeIcon icon={faListOl} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('quote', index)}
-                        >
-                          <FontAwesomeIcon icon={faQuoteRight} />
-                        </button>
-                        <button
-                          type="button"
-                          className="px-2 py-1 text-xs bg-gray-200 rounded"
-                          onClick={() => handleFormatText('horizontal-line', index)}
-                        >
-                          <FontAwesomeIcon icon={faImage} />
-                        </button>
-                      </div>
-                      <textarea
-                        id={`content-${index}`}
-                        value={block.value}
-                        onChange={(e) => handleContentChange(e, index)}
-                        rows={4}
-                        placeholder="Write your post content here..."
-                        className="w-full px-4 py-3 border-none focus:outline-none"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="url"
-                            value={block.value}
-                            onChange={(e) => {
-                                const newContent = [...formData.content];
-                                newContent[index] = { type: 'image', value: e.target.value };
-                                setFormData(prev => ({ ...prev, content: newContent }));
-                            }}
-                            placeholder="https://example.com/image.jpg"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500 hover:text-red-700">
-                          <FontAwesomeIcon icon={faTimes} />
-                        </button>
-                    </div>
-                  )}
-                  <div className="flex gap-2 justify-center">
-                    <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500">Remove Block</button>
-                    <button type="button" onClick={() => handleAddContentBlock("text", index)} className="text-blue-500">Add Text</button>
-                    <button type="button" onClick={() => handleAddContentBlock("image", index)} className="text-blue-500">Add Image</button>
-                  </div>
+                    ))}
                 </div>
-              ))}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Content Preview
+                    </label>
+                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 h-full overflow-y-auto">
+                        {formData.content.map((block, index) => (
+                            <div key={index}>
+                                {block.type === 'text' ? (
+                                    <div dangerouslySetInnerHTML={{ __html: renderMarkdown(block.value) }} />
+                                ) : (
+                                    <div className="my-4">
+                                        <img src={block.value} alt="" className="w-full rounded-lg" />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
             <div>

@@ -18,6 +18,7 @@ import {
   faImage,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons"
+import React from "react"
 
 interface PostContent {
   type: "text" | "image";
@@ -69,112 +70,45 @@ const saveBlogData = (data: BlogData) => {
   localStorage.setItem("blogData", JSON.stringify(data))
 }
 
-const renderMarkdown = (text: string) => {
-  const lines = text.split('\n');
-  const renderedContent: React.ReactNode[] = [];
-  let inList = false;
+const renderMarkdown = (text: string): string => {
+  let formattedText = text;
 
-  const closeList = () => {
-    if (inList) {
-      renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
-      inList = false;
-    }
-  };
+  // Simple string replacements for inline formatting
+  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Bold
+  formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic
+  formattedText = formattedText.replace(/<u>(.*?)<\/u>/g, '<u>$1</u>'); // Underline
+  formattedText = formattedText.replace(/~~(.*?)~~/g, '<s>$1</s>'); // Strikethrough
+  formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>'); // Code
+  formattedText = formattedText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>'); // Links
 
-  lines.forEach((line, index) => {
-    if (line.startsWith('* ')) {
-      if (!inList) {
-        renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
-        inList = true;
-      }
-      const listItemText = line.substring(2);
-      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
-      return;
-    } else {
-      closeList();
-    }
-
-    if (line.startsWith('1. ')) {
-      if (!inList) {
-        renderedContent.push(React.createElement('ol', { key: `ol-${renderedContent.length}` }));
-        inList = true;
-      }
-      const listItemText = line.substring(3);
-      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
-      return;
-    } else {
-      closeList();
-    }
-
+  // Line-by-line formatting
+  const lines = formattedText.split('\n');
+  const processedLines = lines.map(line => {
     if (line.startsWith('# ')) {
-      renderedContent.push(React.createElement('h1', { key: `h1-${index}` }, line.substring(2)));
-      return;
+      return `<h1>${line.substring(2)}</h1>`;
     }
     if (line.startsWith('## ')) {
-      renderedContent.push(React.createElement('h2', { key: `h2-${index}` }, line.substring(3)));
-      return;
+      return `<h2>${line.substring(3)}</h2>`;
     }
     if (line.startsWith('### ')) {
-      renderedContent.push(React.createElement('h3', { key: `h3-${index}` }, line.substring(4)));
-      return;
+      return `<h3>${line.substring(4)}</h3>`;
     }
     if (line.startsWith('> ')) {
-      renderedContent.push(React.createElement('blockquote', { key: `blockquote-${index}` }, line.substring(2)));
-      return;
+      return `<blockquote>${line.substring(2)}</blockquote>`;
     }
     if (line.startsWith('---')) {
-      renderedContent.push(React.createElement('hr', { key: `hr-${index}` }));
-      return;
+        return '<hr />';
     }
-
-    let textToRender: React.ReactNode[] = [];
-    let remainingText = line;
-    let match;
-
-    // Bold, Italic, Underline, Strikethrough, Code, Links
-    const regex = /(\*\*.*?\*\*|\*.*?\*|<u>.*?<\/u>|~~.*?~~|`.*?`|\[.*?\]\(.*?\))/g;
-    let lastIndex = 0;
-
-    while ((match = regex.exec(remainingText)) !== null) {
-        const precedingText = remainingText.substring(lastIndex, match.index);
-        if (precedingText) {
-            textToRender.push(precedingText);
-        }
-
-        const matchedText = match[0];
-        if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
-            textToRender.push(React.createElement('strong', { key: `bold-${index}-${match.index}` }, matchedText.slice(2, -2)));
-        } else if (matchedText.startsWith('*') && matchedText.endsWith('*')) {
-            textToRender.push(React.createElement('em', { key: `italic-${index}-${match.index}` }, matchedText.slice(1, -1)));
-        } else if (matchedText.startsWith('<u>') && matchedText.endsWith('</u>')) {
-            textToRender.push(React.createElement('u', { key: `underline-${index}-${match.index}` }, matchedText.slice(3, -4)));
-        } else if (matchedText.startsWith('~~') && matchedText.endsWith('~~')) {
-            textToRender.push(React.createElement('s', { key: `strikethrough-${index}-${match.index}` }, matchedText.slice(2, -2)));
-        } else if (matchedText.startsWith('`') && matchedText.endsWith('`')) {
-            textToRender.push(React.createElement('code', { key: `code-${index}-${match.index}` }, matchedText.slice(1, -1)));
-        } else if (matchedText.startsWith('[') && matchedText.includes('](') && matchedText.endsWith(')')) {
-            const linkText = matchedText.substring(1, matchedText.indexOf(']'));
-            const linkUrl = matchedText.substring(matchedText.indexOf('](') + 2, matchedText.length - 1);
-            textToRender.push(React.createElement('a', { key: `link-${index}-${match.index}`, href: linkUrl }, linkText));
-        } else {
-            textToRender.push(matchedText);
-        }
-        lastIndex = regex.lastIndex;
+    if (line.startsWith('* ')) {
+        return `<li>${line.substring(2)}</li>`;
     }
-
-    const remaining = remainingText.substring(lastIndex);
-    if (remaining) {
-        textToRender.push(remaining);
+    if (line.startsWith('1. ')) {
+        return `<li>${line.substring(3)}</li>`;
     }
-    
-    if (textToRender.length > 0) {
-      renderedContent.push(React.createElement('p', { key: `p-${index}` }, ...textToRender));
-    }
+    return `<p>${line}</p>`;
   });
 
-  closeList();
-
-  return <div className="prose prose-lg max-w-none mb-12">{renderedContent}</div>;
+  return processedLines.join('');
 };
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
@@ -331,7 +265,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     }))
   }
 
-  const handleFormatText = (format: string, index: number, value?: string) => {
+  const handleFormatText = (format: string, index: number) => {
     const newContent = [...formData.content];
     const block = newContent[index];
     if (block.type === 'text') {
@@ -395,20 +329,19 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             }
             break;
         }
-
         if (format !== 'image') {
           newContent[index] = { ...block, value: newValue };
           setFormData(prev => ({ ...prev, content: newContent }));
         }
       }
     }
-  }
+  };
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
   if (isCreating || isEditing) {
     const postToEdit = isEditing ? data?.posts.find((p: Post) => p.id.toString() === postId) : null;
-    const initialContent = isEditing && postToEdit ? (Array.isArray(postToEdit.content) ? postToEdit.content : [{ type: "text", value: postToEdit.content as string }]) : formData.content;
+    const contentArray = isEditing && postToEdit ? (Array.isArray(postToEdit.content) ? postToEdit.content : [{ type: "text", value: postToEdit.content as string }]) : formData.content;
 
     return (
       <div className="min-h-screen bg-white">

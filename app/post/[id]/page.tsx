@@ -39,17 +39,14 @@ interface BlogData {
 }
 
 const loadBlogData = async (): Promise<BlogData> => {
-  // Try to load from localStorage first
   const storedData = localStorage.getItem("blogData")
   if (storedData) {
     return JSON.parse(storedData)
   }
 
-  // Fallback to data.json
   const response = await fetch("/data.json")
   const data = await response.json()
 
-  // Store in localStorage for future use
   localStorage.setItem("blogData", JSON.stringify(data))
   return data
 }

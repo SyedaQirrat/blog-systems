@@ -41,7 +41,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
     const color = colors[post.id % colors.length]
     return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
   }
-
+  
   const images = Array.isArray(post.image) ? post.image : [post.image];
   const firstImage = images.length > 0 ? images[0] : null;
 

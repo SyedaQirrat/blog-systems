@@ -1,16 +1,34 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import {
+  faBold,
+  faItalic,
+  faUnderline,
+  faStrikethrough,
+  faCode,
+  faListUl,
+  faListOl,
+  faQuoteRight,
+  faLink,
+  faImage,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons"
+
+interface PostContent {
+  type: "text" | "image";
+  value: string;
+}
 
 interface Post {
   id: number
   title: string
-  content: string
-  image: string[]
+  content: PostContent[] | string
+  image: string[] | string
   authorId: string
   categoryId: string
   tags: string[]
@@ -35,17 +53,14 @@ interface BlogData {
 }
 
 const loadBlogData = async (): Promise<BlogData> => {
-  // Try to load from localStorage first
   const storedData = localStorage.getItem("blogData")
   if (storedData) {
     return JSON.parse(storedData)
   }
 
-  // Fallback to data.json
   const response = await fetch("/data.json")
   const data = await response.json()
 
-  // Store in localStorage for future use
   localStorage.setItem("blogData", JSON.stringify(data))
   return data
 }
@@ -61,9 +76,18 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   const isCreating = postId === 'new'
 
   const [data, setData] = useState<BlogData | null>(null)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    content: PostContent[];
+    image: string[];
+    authorId: string;
+    categoryId: string;
+    tags: string;
+    isPublished: boolean;
+    publishedDate: string;
+  }>({
     title: "",
-    content: "",
+    content: [{ type: "text", value: "" }],
     image: [""],
     authorId: "",
     categoryId: "",
@@ -79,10 +103,12 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       if (isEditing && postId) {
         const post = blogData.posts.find((p: Post) => p.id.toString() === postId)
         if (post) {
+          const contentArray = Array.isArray(post.content) ? post.content : [{ type: "text", value: post.content as string }];
+          const imageArray = Array.isArray(post.image) ? post.image : [post.image as string];
           setFormData({
             title: post.title,
-            content: post.content,
-            image: Array.isArray(post.image) ? post.image : [post.image],
+            content: contentArray,
+            image: imageArray,
             authorId: post.authorId,
             categoryId: post.categoryId,
             tags: post.tags.join(", "),
@@ -128,24 +154,19 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     let updatedData: BlogData
 
     if (isEditing) {
-      // Update existing post
       updatedData = {
         ...data,
         posts: data.posts.map((post) => (post.id.toString() === postId ? postData : post)),
       }
     } else {
-      // Add new post
       updatedData = {
         ...data,
         posts: [postData, ...data.posts],
       }
     }
 
-    // Save to localStorage
     saveBlogData(updatedData)
     setData(updatedData)
-
-    console.log(isEditing ? "Updated post:" : "Created post:", postData)
 
     if (isEditing) {
       router.push(`/post/${postId}`)
@@ -177,6 +198,23 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     setFormData(prev => ({ ...prev, image: newImages }));
   }
 
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>, index: number) => {
+    const newContent = [...formData.content];
+    newContent[index] = { type: "text", value: e.target.value };
+    setFormData(prev => ({ ...prev, content: newContent }));
+  }
+
+  const handleAddContentBlock = (type: "text" | "image", index: number) => {
+    const newContent = [...formData.content];
+    newContent.splice(index + 1, 0, { type, value: "" });
+    setFormData(prev => ({ ...prev, content: newContent }));
+  }
+
+  const handleRemoveContentBlock = (index: number) => {
+    const newContent = formData.content.filter((_, i) => i !== index);
+    setFormData(prev => ({ ...prev, content: newContent }));
+  }
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
     setFormData((prev) => ({
@@ -185,182 +223,84 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     }))
   }
 
-  if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
+  const handleFormatText = (format: string, index: number, value?: string) => {
+    const newContent = [...formData.content];
+    const block = newContent[index];
+    if (block.type === 'text') {
+      const textarea = document.getElementById(`content-${index}`) as HTMLTextAreaElement;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = block.value.substring(start, end);
+        let newValue = block.value;
 
-  // Show the Create Post form if the URL parameter is 'new'
-  if (isCreating) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
-          <div className="max-w-4xl mx-auto px-6">
-            <Link
-              href="/manage-post/all"
-              className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6"
-            >
-              ← Back to Manage Posts
-            </Link>
-            <h1 className="text-4xl md:text-6xl font-thin text-white">CREATE POST</h1>
-          </div>
-        </div>
+        switch (format) {
+          case 'h1':
+            newValue = block.value.substring(0, start) + `# ${selectedText}` + block.value.substring(end);
+            break;
+          case 'h2':
+            newValue = block.value.substring(0, start) + `## ${selectedText}` + block.value.substring(end);
+            break;
+          case 'h3':
+            newValue = block.value.substring(0, start) + `### ${selectedText}` + block.value.substring(end);
+            break;
+          case 'bold':
+            newValue = block.value.substring(0, start) + `**${selectedText}**` + block.value.substring(end);
+            break;
+          case 'italic':
+            newValue = block.value.substring(0, start) + `*${selectedText}*` + block.value.substring(end);
+            break;
+          case 'underline':
+            newValue = block.value.substring(0, start) + `<u>${selectedText}</u>` + block.value.substring(end);
+            break;
+          case 'strikethrough':
+            newValue = block.value.substring(0, start) + `~~${selectedText}~~` + block.value.substring(end);
+            break;
+          case 'code':
+            newValue = block.value.substring(0, start) + `\`${selectedText}\`` + block.value.substring(end);
+            break;
+          case 'list-ul':
+            newValue = block.value.substring(0, start) + `* ${selectedText}` + block.value.substring(end);
+            break;
+          case 'list-ol':
+            newValue = block.value.substring(0, start) + `1. ${selectedText}` + block.value.substring(end);
+            break;
+          case 'quote':
+            newValue = block.value.substring(0, start) + `> ${selectedText}` + block.value.substring(end);
+            break;
+          case 'horizontal-line':
+            newValue = block.value.substring(0, start) + `\n---\n` + block.value.substring(end);
+            break;
+          case 'link':
+            const url = prompt('Enter URL:');
+            if (url) {
+              newValue = block.value.substring(0, start) + `[${selectedText}](${url})` + block.value.substring(end);
+            }
+            break;
+          case 'image':
+            const imageUrl = prompt('Enter Image URL:');
+            if (imageUrl) {
+              handleAddContentBlock('image', index);
+              const nextContent = [...formData.content];
+              nextContent[index + 1] = { type: 'image', value: imageUrl };
+              setFormData(prev => ({ ...prev, content: nextContent }));
+            }
+            break;
+        }
 
-        {/* Form */}
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Title
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                required
-                placeholder="Enter post title..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                Content
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                required
-                rows={12}
-                placeholder="Write your post content here..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image URLs
-              </label>
-              {formData.image.map((imageUrl, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => handleImageChange(e, index)}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
-                Add Image
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Author
-                </label>
-                <select
-                  id="authorId"
-                  name="authorId"
-                  value={formData.authorId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select an author</option>
-                  {data.authors.map((author) => (
-                    <option key={author.authorId} value={author.authorId}>
-                      {author.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a category</option>
-                  {data.categories.map((category) => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-                Tags (comma-separated)
-              </label>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="react, javascript, web-development"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="isPublished"
-                name="isPublished"
-                checked={formData.isPublished}
-                onChange={handleCheckboxChange}
-                className="rounded text-green-600 border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50"
-              />
-              <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
-                Published
-              </label>
-            </div>
-
-            <div className="flex gap-4 justify-center pt-8">
-              <button
-                type="submit"
-                className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
-                style={{ backgroundColor: "#7ACB59" }}
-              >
-                Create Post
-              </button>
-              <Link
-                href={"/manage-post/all"}
-                className="px-8 py-3 bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors rounded-lg"
-              >
-                Cancel
-              </Link>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
+        if (format !== 'image') {
+          newContent[index] = { ...block, value: newValue };
+          setFormData(prev => ({ ...prev, content: newContent }));
+        }
+      }
+    }
   }
 
-  // Show the edit form if a specific post ID is provided
-  if (isEditing) {
-    const post = data.posts.find((p) => p.id.toString() === postId)
-    if (!post) {
-      return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
-    }
+  if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
+
+  if (isCreating || isEditing) {
+    const postToEdit = isEditing ? data?.posts.find((p: Post) => p.id.toString() === postId) : null;
+    const initialContent = isEditing && postToEdit ? (Array.isArray(postToEdit.content) ? postToEdit.content : [{ type: "text", value: postToEdit.content as string }]) : formData.content;
 
     return (
       <div className="min-h-screen bg-white">
@@ -372,11 +312,10 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             >
               ← Back to Manage Posts
             </Link>
-            <h1 className="text-4xl md:text-6xl font-thin text-white">EDIT POST</h1>
+            <h1 className="text-4xl md:text-6xl font-thin text-white">{isEditing ? "EDIT POST" : "CREATE POST"}</h1>
           </div>
         </div>
 
-        {/* Form */}
         <div className="max-w-4xl mx-auto px-6 py-12">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
@@ -396,24 +335,125 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             </div>
 
             <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Content
               </label>
-              <textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                required
-                rows={12}
-                placeholder="Write your post content here..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              {formData.content.map((block, index) => (
+                <div key={index} className="space-y-2 mb-4">
+                  {block.type === 'text' ? (
+                    <div className="border border-gray-300 rounded-lg p-2">
+                      <div className="flex space-x-2 mb-2">
+                        <div className="relative">
+                          <select className="px-2 py-1 text-xs bg-gray-200 rounded">
+                            <option>Paragraph</option>
+                            <option>H1</option>
+                            <option>H2</option>
+                            <option>H3</option>
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('bold', index)}
+                        >
+                          <FontAwesomeIcon icon={faBold} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('italic', index)}
+                        >
+                          <FontAwesomeIcon icon={faItalic} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('underline', index)}
+                        >
+                          <FontAwesomeIcon icon={faUnderline} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('strikethrough', index)}
+                        >
+                          <FontAwesomeIcon icon={faStrikethrough} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('code', index)}
+                        >
+                          <FontAwesomeIcon icon={faCode} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('list-ul', index)}
+                        >
+                          <FontAwesomeIcon icon={faListUl} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('list-ol', index)}
+                        >
+                          <FontAwesomeIcon icon={faListOl} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('quote', index)}
+                        >
+                          <FontAwesomeIcon icon={faQuoteRight} />
+                        </button>
+                        <button
+                          type="button"
+                          className="px-2 py-1 text-xs bg-gray-200 rounded"
+                          onClick={() => handleFormatText('horizontal-line', index)}
+                        >
+                          <FontAwesomeIcon icon={faImage} />
+                        </button>
+                      </div>
+                      <textarea
+                        id={`content-${index}`}
+                        value={block.value}
+                        onChange={(e) => handleContentChange(e, index)}
+                        rows={4}
+                        placeholder="Write your post content here..."
+                        className="w-full px-4 py-3 border-none focus:outline-none"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="url"
+                            value={block.value}
+                            onChange={(e) => {
+                                const newContent = [...formData.content];
+                                newContent[index] = { type: 'image', value: e.target.value };
+                                setFormData(prev => ({ ...prev, content: newContent }));
+                            }}
+                            placeholder="https://example.com/image.jpg"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500 hover:text-red-700">
+                          <FontAwesomeIcon icon={faTimes} />
+                        </button>
+                    </div>
+                  )}
+                  <div className="flex gap-2 justify-center">
+                    <button type="button" onClick={() => handleRemoveContentBlock(index)} className="text-red-500">Remove Block</button>
+                    <button type="button" onClick={() => handleAddContentBlock("text", index)} className="text-blue-500">Add Text</button>
+                    <button type="button" onClick={() => handleAddContentBlock("image", index)} className="text-blue-500">Add Image</button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Image URLs
+                Featured Image URL
               </label>
               {formData.image.map((imageUrl, index) => (
                 <div key={index} className="flex items-center gap-2 mb-2">
@@ -425,7 +465,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
                   <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
-                    Remove
+                    <FontAwesomeIcon icon={faTimes} />
                   </button>
                 </div>
               ))}
@@ -525,10 +565,9 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           </form>
         </div>
       </div>
-    )
+    );
   }
 
-  // Otherwise, show the list of all posts
   return (
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
@@ -577,5 +616,5 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
         </ul>
       </div>
     </div>
-  )
+  );
 }

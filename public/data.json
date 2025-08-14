@@ -3,7 +3,28 @@
     {
       "id": 1,
       "title": "How React Changed Frontend Development",
-      "content": "React revolutionized frontend development with its component-based architecture, virtual DOM, and declarative UI patterns. It allowed developers to build large-scale apps with ease and maintainability.\n\nBefore React, building complex user interfaces was a nightmare. Developers had to manually manipulate the DOM, handle state updates, and manage complex data flows. React introduced a paradigm shift that made UI development more predictable and efficient.\n\nThe virtual DOM concept was particularly groundbreaking. Instead of directly manipulating the browser's DOM, React creates a lightweight copy in memory. When state changes, React compares the virtual DOM with the real DOM and only updates what's necessary. This approach dramatically improved performance and made applications feel more responsive.\n\nComponent-based architecture encouraged code reusability and maintainability. Developers could break down complex UIs into smaller, manageable pieces that could be tested and maintained independently. This modular approach made it easier to build and scale applications.",
+      "content": [
+        {
+          "type": "text",
+          "value": "React revolutionized frontend development with its component-based architecture, virtual DOM, and declarative UI patterns. It allowed developers to build large-scale apps with ease and maintainability."
+        },
+        {
+          "type": "text",
+          "value": "Before React, building complex user interfaces was a nightmare. Developers had to manually manipulate the DOM, handle state updates, and manage complex data flows. React introduced a paradigm shift that made UI development more predictable and efficient."
+        },
+        {
+          "type": "image",
+          "value": "https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg"
+        },
+        {
+          "type": "text",
+          "value": "The virtual DOM concept was particularly groundbreaking. Instead of directly manipulating the browser's DOM, React creates a lightweight copy in memory. When state changes, React compares the virtual DOM with the real DOM and only updates what's necessary. This approach dramatically improved performance and made applications feel more responsive."
+        },
+        {
+          "type": "text",
+          "value": "Component-based architecture encouraged code reusability and maintainability. Developers could break down complex UIs into smaller, manageable pieces that could be tested and maintained independently. This modular approach made it easier to build and scale applications."
+        }
+      ],
       "image": [
         "https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg"
       ],
@@ -19,7 +40,7 @@
       "title": "5 Productivity Hacks for Developers",
       "content": "To get more done in less time, try time blocking, avoid multitasking, use keyboard shortcuts, automate boring tasks, and take regular breaks to stay focused and sharp.\n\nTime blocking is a powerful technique where you schedule specific time slots for different tasks. Instead of jumping between tasks randomly, you dedicate focused periods to single activities. This approach reduces context switching and improves concentration.\n\nMultitasking is a myth. Our brains aren't designed to handle multiple complex tasks simultaneously. When you try to multitask, you're actually rapidly switching between tasks, which reduces efficiency and increases errors. Focus on one task at a time for better results.\n\nKeyboard shortcuts can save hours of time over the course of a project. Learn the shortcuts for your most-used tools and editors. The time investment in learning shortcuts pays off quickly with increased productivity.\n\nAutomation is a developer's best friend. Identify repetitive tasks in your workflow and find ways to automate them. Whether it's build scripts, deployment pipelines, or code formatting, automation reduces manual work and eliminates human error.",
       "image": [
-        "https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg"
+        "https://images.pexels.com/photos/8000560/pexels-photo-8000560.jpeg"
       ],
       "authorId": "2",
       "categoryId": "productivity",
@@ -33,7 +54,7 @@
       "title": "Understanding State Management in React",
       "content": "Managing state is one of the core concepts in React. Learn about useState, useReducer, context, and libraries like Redux or Zustand to handle complex global state.\n\nState management is crucial for building interactive applications. React provides several built-in tools for managing state, starting with the useState hook for local component state. This is perfect for simple state that doesn't need to be shared across components.\n\nFor more complex state logic, useReducer provides a way to manage state with a reducer function. This pattern is especially useful when you have complex state transitions or when the next state depends on the previous state.\n\nReact Context allows you to share state across components without prop drilling. It's perfect for global state like user authentication, theme preferences, or language settings. However, it's important to use Context judiciously to avoid performance issues.\n\nFor large applications with complex state requirements, external libraries like Redux Toolkit or Zustand provide powerful state management solutions. These libraries offer features like middleware, dev tools, and optimized re-rendering.",
       "image": [
-        "https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg"
+        "https://images.pexels.com/photos/6567800/pexels-photo-6567800.jpeg"
       ],
       "authorId": "1",
       "categoryId": "tech",

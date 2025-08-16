@@ -35,6 +35,7 @@ interface Post {
   tags: string[]
   isPublished?: boolean
   publishedDate?: string
+  parentId?: number | null
 }
 
 interface Author {
@@ -143,6 +144,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     tags: string;
     isPublished: boolean;
     publishedDate: string;
+    parentId: number | null | undefined
   }>({
     title: "",
     content: "",
@@ -152,6 +154,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     tags: "",
     isPublished: false,
     publishedDate: "",
+    parentId: undefined
   })
 
   useEffect(() => {
@@ -172,6 +175,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             tags: post.tags.join(", "),
             isPublished: post.isPublished || false,
             publishedDate: post.publishedDate || "",
+            parentId: post.parentId
           })
         }
       }
@@ -200,6 +204,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       tags: tags,
       isPublished: formData.isPublished,
       publishedDate: formData.publishedDate,
+      parentId: formData.parentId
     }
     let updatedData: BlogData
     if (isEditing) {
@@ -293,9 +298,6 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           newValue = `[${selectedText || 'link text'}](${url})`;
         }
         break;
-      case 'horizontal-line':
-        newValue = '\n---\n';
-        break;
       case 'image':
         const imageUrl = prompt('Enter Image URL:');
         if (imageUrl) {
@@ -320,6 +322,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   if (isCreating || isEditing) {
     const postToEdit = isEditing ? data?.posts.find((p: Post) => p.id.toString() === postId) : null;
     const contentString = isEditing && postToEdit ? (Array.isArray(postToEdit.content) ? postToEdit.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : postToEdit.content) as string : formData.content;
+    const topLevelPosts = data?.posts.filter(p => !p.parentId && p.id.toString() !== postId) || [];
 
     return (
       <div className="min-h-screen bg-white">
@@ -480,6 +483,24 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 </div>
             </div>
 
+            <div>
+              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Blog
+              </label>
+              <select
+                id="parentId"
+                name="parentId"
+                value={formData.parentId || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">None</option>
+                {topLevelPosts.map(post => (
+                  <option key={post.id} value={post.id}>{post.title}</option>
+                ))}
+              </select>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Featured Image URL

@@ -21,6 +21,7 @@ interface Post {
   tags: string[]
   isPublished?: boolean
   publishedDate?: string
+  parentId?: number | null
 }
 
 interface Author {
@@ -56,112 +57,60 @@ const saveBlogData = (data: BlogData) => {
   localStorage.setItem("blogData", JSON.stringify(data))
 }
 
-const renderMarkdown = (text: string) => {
-  const lines = text.split('\n');
-  const renderedContent: React.ReactNode[] = [];
+const renderMarkdown = (text: string): string => {
+  let formattedText = text;
+
+  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  formattedText = formattedText.replace(/<u>(.*?)<\/u>/g, '<u>$1</u>');
+  formattedText = formattedText.replace(/~~(.*?)~~/g, '<s>$1</s>');
+  formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>');
+  formattedText = formattedText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+  formattedText = formattedText.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="w-full rounded-lg" />');
+
+  const lines = formattedText.split('\n');
+  let result = '';
   let inList = false;
-
-  const closeList = () => {
-    if (inList) {
-      renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
-      inList = false;
-    }
-  };
-
-  lines.forEach((line, index) => {
-    if (line.startsWith('* ')) {
+  
+  lines.forEach(line => {
+    if (line.startsWith('* ') || line.startsWith('- ')) {
       if (!inList) {
-        renderedContent.push(React.createElement('ul', { key: `ul-${renderedContent.length}` }));
+        result += '<ul>';
         inList = true;
       }
-      const listItemText = line.substring(2);
-      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
-      return;
+      result += `<li>${line.substring(2)}</li>`;
+    } else if (line.match(/^\d+\. /)) {
+        if (!inList) {
+            result += '<ol>';
+            inList = true;
+        }
+        result += `<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`;
     } else {
-      closeList();
-    }
-
-    if (line.startsWith('1. ')) {
-      if (!inList) {
-        renderedContent.push(React.createElement('ol', { key: `ol-${renderedContent.length}` }));
-        inList = true;
+        if (inList) {
+            result += (line.match(/^\d+\. /) ? '</ol>' : '</ul>');
+            inList = false;
+        }
+      if (line.startsWith('# ')) {
+        result += `<h1>${line.substring(2)}</h1>`;
+      } else if (line.startsWith('## ')) {
+        result += `<h2>${line.substring(3)}</h2>`;
+      } else if (line.startsWith('### ')) {
+        result += `<h3>${line.substring(4)}</h3>`;
+      } else if (line.startsWith('> ')) {
+        result += `<blockquote>${line.substring(2)}</blockquote>`;
+      } else if (line.startsWith('---')) {
+        result += '<hr />';
+      } else {
+        result += `<p>${line}</p>`;
       }
-      const listItemText = line.substring(3);
-      renderedContent.push(React.createElement('li', { key: `li-${index}` }, listItemText));
-      return;
-    } else {
-      closeList();
-    }
-
-    if (line.startsWith('# ')) {
-      renderedContent.push(React.createElement('h1', { key: `h1-${index}` }, line.substring(2)));
-      return;
-    }
-    if (line.startsWith('## ')) {
-      renderedContent.push(React.createElement('h2', { key: `h2-${index}` }, line.substring(3)));
-      return;
-    }
-    if (line.startsWith('### ')) {
-      renderedContent.push(React.createElement('h3', { key: `h3-${index}` }, line.substring(4)));
-      return;
-    }
-    if (line.startsWith('> ')) {
-      renderedContent.push(React.createElement('blockquote', { key: `blockquote-${index}` }, line.substring(2)));
-      return;
-    }
-    if (line.startsWith('---')) {
-      renderedContent.push(React.createElement('hr', { key: `hr-${index}` }));
-      return;
-    }
-
-    let textToRender: React.ReactNode[] = [];
-    let remainingText = line;
-    let match;
-
-    // Bold, Italic, Underline, Strikethrough, Code, Links
-    const regex = /(\*\*.*?\*\*|\*.*?\*|<u>.*?<\/u>|~~.*?~~|`.*?`|\[.*?\]\(.*?\))/g;
-    let lastIndex = 0;
-
-    while ((match = regex.exec(remainingText)) !== null) {
-        const precedingText = remainingText.substring(lastIndex, match.index);
-        if (precedingText) {
-            textToRender.push(precedingText);
-        }
-
-        const matchedText = match[0];
-        if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
-            textToRender.push(React.createElement('strong', { key: `bold-${index}-${match.index}` }, matchedText.slice(2, -2)));
-        } else if (matchedText.startsWith('*') && matchedText.endsWith('*')) {
-            textToRender.push(React.createElement('em', { key: `italic-${index}-${match.index}` }, matchedText.slice(1, -1)));
-        } else if (matchedText.startsWith('<u>') && matchedText.endsWith('</u>')) {
-            textToRender.push(React.createElement('u', { key: `underline-${index}-${match.index}` }, matchedText.slice(3, -4)));
-        } else if (matchedText.startsWith('~~') && matchedText.endsWith('~~')) {
-            textToRender.push(React.createElement('s', { key: `strikethrough-${index}-${match.index}` }, matchedText.slice(2, -2)));
-        } else if (matchedText.startsWith('`') && matchedText.endsWith('`')) {
-            textToRender.push(React.createElement('code', { key: `code-${index}-${match.index}` }, matchedText.slice(1, -1)));
-        } else if (matchedText.startsWith('[') && matchedText.includes('](') && matchedText.endsWith(')')) {
-            const linkText = matchedText.substring(1, matchedText.indexOf(']'));
-            const linkUrl = matchedText.substring(matchedText.indexOf('](') + 2, matchedText.length - 1);
-            textToRender.push(React.createElement('a', { key: `link-${index}-${match.index}`, href: linkUrl }, linkText));
-        } else {
-            textToRender.push(matchedText);
-        }
-        lastIndex = regex.lastIndex;
-    }
-
-    const remaining = remainingText.substring(lastIndex);
-    if (remaining) {
-        textToRender.push(remaining);
-    }
-    
-    if (textToRender.length > 0) {
-      renderedContent.push(React.createElement('p', { key: `p-${index}` }, ...textToRender));
     }
   });
 
-  closeList();
-
-  return <div className="prose prose-lg max-w-none mb-12">{renderedContent}</div>;
+  if (inList) {
+    result += '</ul>'; // or </ol>
+  }
+  
+  return result;
 };
 
 
@@ -190,6 +139,9 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
   const post = data.posts.find((p) => p.id.toString() === params.id)
+  const parentPost = post?.parentId ? data.posts.find(p => p.id === post.parentId) : null;
+  const subBlogs = data.posts.filter(p => p.parentId === post?.id);
+
   const author = data.authors.find((a) => a.authorId === post?.authorId)
   const category = data.categories.find((c) => c.categoryId === post?.categoryId)
 
@@ -215,7 +167,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   const images = Array.isArray(post.image) ? post.image : [post.image];
-  const contentBlocks = Array.isArray(post.content) ? post.content : post.content.split("\n").map(text => ({ type: 'text', value: text }));
+  const contentString = Array.isArray(post.content) ? post.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : post.content as string;
 
   return (
     <div className="min-h-screen bg-white">
@@ -224,6 +176,11 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
             ← Back to Blog
           </Link>
+          {parentPost && (
+            <Link href={`/post/${parentPost.id}`} className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 ml-4">
+              ← Back to Parent Blog
+            </Link>
+          )}
 
           <h1 className="text-4xl md:text-6xl font-thin mb-6 text-white">{post.title}</h1>
 
@@ -253,9 +210,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Post Images */}
         {images.length > 0 && (
           <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-4">
             {images.map((imgSrc, index) => (
@@ -271,26 +226,25 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        {/* Post Content */}
-        {contentBlocks.map((block, index) => {
-          if (block.type === 'text') {
-            return (
-              <div key={index} className="mb-6 text-black leading-relaxed">
-                {renderMarkdown(block.value)}
-              </div>
-            );
-          }
-          if (block.type === 'image') {
-            return (
-              <div key={index} className="my-6">
-                <img src={block.value} alt="" className="w-full rounded-lg" />
-              </div>
-            );
-          }
-          return null;
-        })}
+        <div className="prose prose-lg max-w-none mb-12">
+          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(contentString) }} />
+        </div>
+        
+        {subBlogs.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-4">Related Sub-Blogs</h2>
+            <ul>
+              {subBlogs.map(subBlog => (
+                <li key={subBlog.id} className="mb-2">
+                  <Link href={`/post/${subBlog.id}`} className="text-blue-600 hover:underline">
+                    {subBlog.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-12">
           {post.tags.map((tag, index) => (
             <button

@@ -79,21 +79,53 @@ const renderMarkdown = (text: string): string => {
   formattedText = formattedText.replace(/~~(.*?)~~/g, '<s>$1</s>');
   formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>');
   formattedText = formattedText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+  formattedText = formattedText.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="w-full rounded-lg" />');
 
   const lines = formattedText.split('\n');
-  const processedLines = lines.map(line => {
-    if (line.startsWith('# ')) return `<h1>${line.substring(2)}</h1>`;
-    if (line.startsWith('## ')) return `<h2>${line.substring(3)}</h2>`;
-    if (line.startsWith('### ')) return `<h3>${line.substring(4)}</h3>`;
-    if (line.startsWith('> ')) return `<blockquote>${line.substring(2)}</blockquote>`;
-    if (line.startsWith('---')) return '<hr />';
-    if (line.startsWith('* ')) return `<li>${line.substring(2)}</li>`;
-    if (line.startsWith('1. ')) return `<li>${line.substring(3)}</li>`;
-    return `<p>${line}</p>`;
+  let result = '';
+  let inList = false;
+  
+  lines.forEach(line => {
+    if (line.startsWith('* ')) {
+      if (!inList) {
+        result += '<ul>';
+        inList = true;
+      }
+      result += `<li>${line.substring(2)}</li>`;
+    } else if (line.startsWith('1. ')) {
+      if (!inList) {
+        result += '<ol>';
+        inList = true;
+      }
+      result += `<li>${line.substring(3)}</li>`;
+    } else {
+      if (inList) {
+        result += (line.startsWith('1. ') ? '</ol>' : '</ul>');
+        inList = false;
+      }
+      if (line.startsWith('# ')) {
+        result += `<h1>${line.substring(2)}</h1>`;
+      } else if (line.startsWith('## ')) {
+        result += `<h2>${line.substring(3)}</h2>`;
+      } else if (line.startsWith('### ')) {
+        result += `<h3>${line.substring(4)}</h3>`;
+      } else if (line.startsWith('> ')) {
+        result += `<blockquote>${line.substring(2)}</blockquote>`;
+      } else if (line.startsWith('---')) {
+        result += '<hr />';
+      } else {
+        result += `<p>${line}</p>`;
+      }
+    }
   });
 
-  return processedLines.join('');
+  if (inList) {
+    result += '</ul>'; // or </ol>
+  }
+  
+  return result;
 };
+
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
@@ -155,16 +187,9 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!data) return
-
-    const tags = formData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
-    
+    const tags = formData.tags.split(",").map((tag) => tag.trim()).filter((tag) => tag.length > 0)
     const images = formData.image.filter(url => url.length > 0);
-
     const postData = {
       id: isEditing ? Number.parseInt(postId!) : generateUniqueId(),
       title: formData.title,
@@ -176,24 +201,14 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       isPublished: formData.isPublished,
       publishedDate: formData.publishedDate,
     }
-
     let updatedData: BlogData
-
     if (isEditing) {
-      updatedData = {
-        ...data,
-        posts: data.posts.map((post) => (post.id.toString() === postId ? postData : post)),
-      }
+      updatedData = { ...data, posts: data.posts.map((post) => (post.id.toString() === postId ? postData : post)), }
     } else {
-      updatedData = {
-        ...data,
-        posts: [postData, ...data.posts],
-      }
+      updatedData = { ...data, posts: [postData, ...data.posts], }
     }
-
     saveBlogData(updatedData)
     setData(updatedData)
-
     if (isEditing) {
       router.push(`/post/${postId}`)
     } else {
@@ -203,10 +218,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | React.ChangeEvent<HTMLSelectElement> | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value, }))
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -226,10 +238,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: checked, }))
   }
   
   const handleFormatText = (format: string, e: React.MouseEvent) => {
@@ -240,7 +249,9 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const selectedText = textarea.value.substring(start, end);
-    let newValue = textarea.value;
+    const textBefore = textarea.value.substring(0, start);
+    const textAfter = textarea.value.substring(end);
+    let newValue = selectedText;
 
     switch (format) {
       case 'h1':
@@ -285,10 +296,24 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       case 'horizontal-line':
         newValue = '\n---\n';
         break;
+      case 'image':
+        const imageUrl = prompt('Enter Image URL:');
+        if (imageUrl) {
+          newValue = `![alt text](${imageUrl})\n`;
+        }
+        break;
+      default:
+        return;
     }
     
-    setFormData(prev => ({ ...prev, content: newValue }));
-  };
+    setFormData(prev => ({ ...prev, content: textBefore + newValue + textAfter }));
+    
+    let newCursorPos = start + newValue.length;
+    setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+};
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
@@ -334,102 +359,104 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                         Content Editor
                     </label>
                     <div className="border border-gray-300 rounded-lg p-2">
-                        <div className="flex space-x-2 mb-2">
+                        <div className="flex flex-wrap space-x-2 mb-2">
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('h1', e)}
                             >
                                 H1
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('h2', e)}
                             >
                                 H2
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('h3', e)}
                             >
                                 H3
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('bold', e)}
                             >
                                 <FontAwesomeIcon icon={faBold} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('italic', e)}
                             >
                                 <FontAwesomeIcon icon={faItalic} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('underline', e)}
                             >
                                 <FontAwesomeIcon icon={faUnderline} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('strikethrough', e)}
                             >
                                 <FontAwesomeIcon icon={faStrikethrough} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('code', e)}
                             >
                                 <FontAwesomeIcon icon={faCode} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('list-ul', e)}
                             >
                                 <FontAwesomeIcon icon={faListUl} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('list-ol', e)}
                             >
                                 <FontAwesomeIcon icon={faListOl} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('quote', e)}
                             >
                                 <FontAwesomeIcon icon={faQuoteRight} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
                                 onClick={(e) => handleFormatText('link', e)}
                             >
                                 <FontAwesomeIcon icon={faLink} />
                             </button>
                             <button
                                 type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded"
-                                onClick={(e) => {
-                                  const imageUrl = prompt('Enter Image URL:');
-                                  if (imageUrl) {
-                                    setFormData(prev => ({ ...prev, content: prev.content + `\n<img src="${imageUrl}" />\n` }));
-                                  }
-                                }}
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
+                                onClick={(e) => handleFormatText('image', e)}
                             >
                                 <FontAwesomeIcon icon={faImage} />
+                            </button>
+                            <button
+                                type="button"
+                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
+                                onClick={(e) => handleFormatText('horizontal-line', e)}
+                            >
+                                ---
                             </button>
                         </div>
                         <textarea
@@ -567,7 +594,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   return (

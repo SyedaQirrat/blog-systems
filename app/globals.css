@@ -120,10 +120,10 @@
   body {
     @apply bg-background text-foreground;
     background-color: #0E4772;
-    color: #7ACB59;
+    color: #000000;
   }
   a {
-    color: #7ACB59;
+    color: #000000;
   }
   button {
     background-color: #7ACB59;

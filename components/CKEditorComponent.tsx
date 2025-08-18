@@ -1,4 +1,4 @@
-
+// components/CKEditorComponent.tsx
 import React, { useRef, useEffect, useState } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
@@ -9,7 +9,19 @@ interface CKEditorComponentProps {
 }
 
 const editorConfiguration = {
-    toolbar: [ 'bold', 'italic', '|', 'undo', 'redo' ]
+    toolbar: [ 'bold', 'italic', '|', 'undo', 'redo', 'fontSize', '|','bold','italic',
+						'underline',
+						'strikethrough',
+						'subscript',
+						'code',
+						'removeFormat',
+						'|',
+						'link',
+						'highlight',
+						'|',
+						'bulletedList',
+						'numberedList',
+						'todoList' ]
 };
 
 export const CKEditorComponent: React.FC<CKEditorComponentProps> = ({ value, onChange }) => {

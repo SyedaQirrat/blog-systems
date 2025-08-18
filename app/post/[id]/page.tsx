@@ -6,15 +6,10 @@ import Link from "next/link"
 import Image from "next/image"
 import React from "react"
 
-interface PostContent {
-  type: "text" | "image";
-  value: string;
-}
-
 interface Post {
   id: number
   title: string
-  content: string // Changed to store HTML string
+  content: string
   image: string[] | string
   authorId: string
   categoryId: string
@@ -56,63 +51,6 @@ const loadBlogData = async (): Promise<BlogData> => {
 const saveBlogData = (data: BlogData) => {
   localStorage.setItem("blogData", JSON.stringify(data))
 }
-
-const renderMarkdown = (text: string): string => {
-  let formattedText = text;
-
-  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  formattedText = formattedText.replace(/<u>(.*?)<\/u>/g, '<u>$1</u>');
-  formattedText = formattedText.replace(/~~(.*?)~~/g, '<s>$1</s>');
-  formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>');
-  formattedText = formattedText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-  formattedText = formattedText.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="w-full rounded-lg" />');
-
-  const lines = formattedText.split('\n');
-  let result = '';
-  let inList = false;
-  
-  lines.forEach(line => {
-    if (line.startsWith('* ') || line.startsWith('- ')) {
-      if (!inList) {
-        result += '<ul>';
-        inList = true;
-      }
-      result += `<li>${line.substring(2)}</li>`;
-    } else if (line.match(/^\d+\. /)) {
-        if (!inList) {
-            result += '<ol>';
-            inList = true;
-        }
-        result += `<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`;
-    } else {
-        if (inList) {
-            result += (line.match(/^\d+\. /) ? '</ol>' : '</ul>');
-            inList = false;
-        }
-      if (line.startsWith('# ')) {
-        result += `<h1>${line.substring(2)}</h1>`;
-      } else if (line.startsWith('## ')) {
-        result += `<h2>${line.substring(3)}</h2>`;
-      } else if (line.startsWith('### ')) {
-        result += `<h3>${line.substring(4)}</h3>`;
-      } else if (line.startsWith('> ')) {
-        result += `<blockquote>${line.substring(2)}</blockquote>`;
-      } else if (line.startsWith('---')) {
-        result += '<hr />';
-      } else {
-        result += `<p>${line}</p>`;
-      }
-    }
-  });
-
-  if (inList) {
-    result += '</ul>'; // or </ol>
-  }
-  
-  return result;
-};
-
 
 export default function PostDetail({ params }: { params: { id: string } }) {
   const [data, setData] = useState<BlogData | null>(null)
@@ -167,7 +105,6 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   const images = Array.isArray(post.image) ? post.image : [post.image];
-  const contentString = Array.isArray(post.content) ? post.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : post.content as string;
 
   return (
     <div className="min-h-screen bg-white">
@@ -227,7 +164,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         )}
 
         <div className="prose prose-lg max-w-none mb-12">
-          <div dangerouslySetInnerHTML={{ __html: renderMarkdown(contentString) }} />
+          <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
         
         {subBlogs.length > 0 && (

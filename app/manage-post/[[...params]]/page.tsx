@@ -5,30 +5,13 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import {
-  faBold,
-  faItalic,
-  faUnderline,
-  faStrikethrough,
-  faCode,
-  faListUl,
-  faListOl,
-  faQuoteRight,
-  faLink,
-  faImage,
-  faTimes,
-} from "@fortawesome/free-solid-svg-icons"
-//import React from "react"
-
-interface PostContent {
-  type: "text" | "image";
-  value: string;
-}
+import { faTimes } from "@fortawesome/free-solid-svg-icons"
+import { TrixEditor } from "@/components/TrixEditor"
 
 interface Post {
   id: number
   title: string
-  content: string // Changed to store HTML string
+  content: string
   image: string[] | string
   authorId: string
   categoryId: string
@@ -70,71 +53,6 @@ const loadBlogData = async (): Promise<BlogData> => {
 const saveBlogData = (data: BlogData) => {
   localStorage.setItem("blogData", JSON.stringify(data))
 }
-
-const renderMarkdown = (text: string): string => {
-  let formattedText = text;
-
-  formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  formattedText = formattedText.replace(/\*(.*?)\*/g, '<em>$1</em>');
-  formattedText = formattedText.replace(/<u>(.*?)<\/u>/g, '<u>$1</u>');
-  formattedText = formattedText.replace(/~~(.*?)~~/g, '<s>$1</s>');
-  formattedText = formattedText.replace(/`(.*?)`/g, '<code>$1</code>');
-  formattedText = formattedText.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
-  formattedText = formattedText.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" class="w-full rounded-lg" />');
-
-  const lines = formattedText.split('\n');
-  let result = '';
-  let inList = false;
-  let inOrderedList = false;
-  
-  lines.forEach(line => {
-    if (line.startsWith('* ')) {
-      if (!inList) {
-        result += '<ul>';
-        inList = true;
-      }
-      result += `<li>${line.substring(2)}</li>`;
-    } else if (line.match(/^\d+\. /)) {
-        if (!inOrderedList) {
-            result += '<ol>';
-            inOrderedList = true;
-        }
-        result += `<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`;
-    } else {
-        if (inList) {
-            result += '</ul>';
-            inList = false;
-        }
-        if (inOrderedList) {
-            result += '</ol>';
-            inOrderedList = false;
-        }
-      if (line.startsWith('# ')) {
-        result += `<h1>${line.substring(2)}</h1>`;
-      } else if (line.startsWith('## ')) {
-        result += `<h2>${line.substring(3)}</h2>`;
-      } else if (line.startsWith('### ')) {
-        result += `<h3>${line.substring(4)}</h3>`;
-      } else if (line.startsWith('> ')) {
-        result += `<blockquote>${line.substring(2)}</blockquote>`;
-      } else if (line.startsWith('---')) {
-        result += '<hr />';
-      } else {
-        result += `<p>${line}</p>`;
-      }
-    }
-  });
-
-  if (inList) {
-    result += '</ul>';
-  }
-  if (inOrderedList) {
-    result += '</ol>';
-  }
-
-  return result;
-};
-
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
@@ -233,6 +151,10 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value, }))
   }
+  
+  const handleTrixChange = (html: string) => {
+    setFormData(prev => ({ ...prev, content: html }));
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const newImages = [...formData.image];
@@ -253,77 +175,6 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     const { name, checked } = e.target
     setFormData((prev) => ({ ...prev, [name]: checked, }))
   }
-  
-  const handleFormatText = (format: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    const textarea = document.getElementById('content') as HTMLTextAreaElement;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-    const textBefore = textarea.value.substring(0, start);
-    const textAfter = textarea.value.substring(end);
-    let newValue = selectedText;
-
-    switch (format) {
-      case 'h1':
-        newValue = `# ${selectedText || 'Heading 1'}`;
-        break;
-      case 'h2':
-        newValue = `## ${selectedText || 'Heading 2'}`;
-        break;
-      case 'h3':
-        newValue = `### ${selectedText || 'Heading 3'}`;
-        break;
-      case 'bold':
-        newValue = `**${selectedText || 'bold text'}**`;
-        break;
-      case 'italic':
-        newValue = `*${selectedText || 'italic text'}*`;
-        break;
-      case 'underline':
-        newValue = `<u>${selectedText || 'underlined text'}</u>`;
-        break;
-      case 'strikethrough':
-        newValue = `~~${selectedText || 'strikethrough text'}~~`;
-        break;
-      case 'code':
-        newValue = `\`${selectedText || 'code'}\``;
-        break;
-      case 'list-ul':
-        newValue = `* ${selectedText || 'list item'}`;
-        break;
-      case 'list-ol':
-        newValue = `1. ${selectedText || 'list item'}`;
-        break;
-      case 'quote':
-        newValue = `> ${selectedText || 'blockquote'}`;
-        break;
-      case 'link':
-        const url = prompt('Enter URL:');
-        if (url) {
-          newValue = `[${selectedText || 'link text'}](${url})`;
-        }
-        break;
-      case 'image':
-        const imageUrl = prompt('Enter Image URL:');
-        if (imageUrl) {
-          newValue = `![alt text](${imageUrl})\n`;
-        }
-        break;
-      default:
-        return;
-    }
-    
-    setFormData(prev => ({ ...prev, content: textBefore + newValue + textAfter }));
-    
-    let newCursorPos = start + newValue.length;
-    setTimeout(() => {
-        textarea.focus();
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-    }, 0);
-};
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
@@ -363,26 +214,32 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
+
+            <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Content
                 </label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a category</option>
-                  {data.categories.map((category) => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <TrixEditor value={contentString} onChange={handleTrixChange} />
+            </div>
+
+            <div>
+              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Blog
+              </label>
+              <select
+                id="parentId"
+                name="parentId"
+                value={formData.parentId || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">None</option>
+                {topLevelPosts.map(post => (
+                  <option key={post.id} value={post.id}>{post.title}</option>
+                ))}
+              </select>
+            </div>
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Featured Image URL
@@ -427,152 +284,28 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                   ))}
                 </select>
               </div>
-               <div>
-              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Blog
-              </label>
-              <select
-                id="parentId"
-                name="parentId"
-                value={formData.parentId || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">None</option>
-                {topLevelPosts.map(post => (
-                  <option key={post.id} value={post.id}>{post.title}</option>
-                ))}
-              </select>
-            </div>              
-            </div>
-            <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Content Editor
-                    </label>
-                    <div className="border border-gray-300 rounded-lg p-2">
-                        <div className="flex flex-wrap space-x-2 mb-2">
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('h1', e)}
-                            >
-                                H1
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('h2', e)}
-                            >
-                                H2
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('h3', e)}
-                            >
-                                H3
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('bold', e)}
-                            >
-                                <FontAwesomeIcon icon={faBold} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('italic', e)}
-                            >
-                                <FontAwesomeIcon icon={faItalic} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('underline', e)}
-                            >
-                                <FontAwesomeIcon icon={faUnderline} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('strikethrough', e)}
-                            >
-                                <FontAwesomeIcon icon={faStrikethrough} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('code', e)}
-                            >
-                                <FontAwesomeIcon icon={faCode} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('list-ul', e)}
-                            >
-                                <FontAwesomeIcon icon={faListUl} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('list-ol', e)}
-                            >
-                                <FontAwesomeIcon icon={faListOl} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('quote', e)}
-                            >
-                                <FontAwesomeIcon icon={faQuoteRight} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('link', e)}
-                            >
-                                <FontAwesomeIcon icon={faLink} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('image', e)}
-                            >
-                                <FontAwesomeIcon icon={faImage} />
-                            </button>
-                            <button
-                                type="button"
-                                className="px-2 py-1 text-xs bg-gray-200 rounded text-black"
-                                onClick={(e) => handleFormatText('horizontal-line', e)}
-                            >
-                                ---
-                            </button>
-                        </div>
-                        <textarea
-                          id="content"
-                          name="content"
-                          value={formData.content}
-                          onChange={handleChange}
-                          rows={12}
-                          placeholder="Write your post content here..."
-                          className="w-full px-4 py-3 border-none focus:outline-none"
-                        />
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Content Preview
-                    </label>
-                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 h-full overflow-y-auto">
-                        <div dangerouslySetInnerHTML={{ __html: renderMarkdown(formData.content) }} />
-                    </div>
-                </div>
-            </div>
 
-            
+              <div>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {data.categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">

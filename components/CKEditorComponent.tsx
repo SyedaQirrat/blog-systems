@@ -9,17 +9,22 @@ interface CKEditorComponentProps {
 }
 
 const editorConfiguration = {
-    toolbar: [ 'bold', 'italic', '|', 'undo', 'redo', 'fontSize', '|','bold','italic',
+    toolbar: [ 'bold', 
+						'|',  'italic', '|', 'undo', 
+						'|','redo',
+						'|', 'fontSize', '|',
 						'underline',
 						'strikethrough',
 						'subscript',
 						'code',
+						'|',
 						'removeFormat',
 						'|',
 						'link',
-						'highlight',
 						'|',
+						'highlight',
 						'bulletedList',
+						'|',
 						'numberedList',
 						'todoList' ]
 };

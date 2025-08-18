@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes } from "@fortawesome/free-solid-svg-icons"
-import { TrixEditor } from "@/components/TrixEditor"
+import { CKEditorComponent } from "@/components/CKEditorComponent"
 
 interface Post {
   id: number
@@ -152,9 +152,9 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     setFormData((prev) => ({ ...prev, [name]: value, }))
   }
   
-  const handleTrixChange = (html: string) => {
-    setFormData(prev => ({ ...prev, content: html }));
-  }
+  const handleEditorChange = (data: string) => {
+    setFormData(prev => ({ ...prev, content: data }));
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const newImages = [...formData.image];
@@ -214,31 +214,26 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-
-            <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Content
-                </label>
-                <TrixEditor value={contentString} onChange={handleTrixChange} />
-            </div>
-
             <div>
-              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Blog
-              </label>
-              <select
-                id="parentId"
-                name="parentId"
-                value={formData.parentId || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">None</option>
-                {topLevelPosts.map(post => (
-                  <option key={post.id} value={post.id}>{post.title}</option>
-                ))}
-              </select>
-            </div>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {data.categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -262,8 +257,27 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 Add Image
               </button>
             </div>
-
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          
+
+            <div>
+              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Blog
+              </label>
+              <select
+                id="parentId"
+                name="parentId"
+                value={formData.parentId || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">None</option>
+                {topLevelPosts.map(post => (
+                  <option key={post.id} value={post.id}>{post.title}</option>
+                ))}
+              </select>
+            </div>
               <div>
                 <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
                   Author
@@ -285,28 +299,13 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a category</option>
-                  {data.categories.map((category) => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Content
+              </label>
+              <CKEditorComponent value={contentString} onChange={handleEditorChange} />
+            </div>
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
                 Tags (comma-separated)

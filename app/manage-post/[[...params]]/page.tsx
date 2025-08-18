@@ -363,7 +363,88 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
+            <div>
+                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  id="categoryId"
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select a category</option>
+                  {data.categories.map((category) => (
+                    <option key={category.categoryId} value={category.categoryId}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Featured Image URL
+              </label>
+              {formData.image.map((imageUrl, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <input
+                    type="url"
+                    value={imageUrl}
+                    onChange={(e) => handleImageChange(e, index)}
+                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
+              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
+                Add Image
+              </button>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Author
+                </label>
+                <select
+                  id="authorId"
+                  name="authorId"
+                  value={formData.authorId}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select an author</option>
+                  {data.authors.map((author) => (
+                    <option key={author.authorId} value={author.authorId}>
+                      {author.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+               <div>
+              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Blog
+              </label>
+              <select
+                id="parentId"
+                name="parentId"
+                value={formData.parentId || ""}
+                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">None</option>
+                {topLevelPosts.map(post => (
+                  <option key={post.id} value={post.id}>{post.title}</option>
+                ))}
+              </select>
+            </div>              
+            </div>
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -491,90 +572,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 </div>
             </div>
 
-            <div>
-              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Blog
-              </label>
-              <select
-                id="parentId"
-                name="parentId"
-                value={formData.parentId || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">None</option>
-                {topLevelPosts.map(post => (
-                  <option key={post.id} value={post.id}>{post.title}</option>
-                ))}
-              </select>
-            </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Featured Image URL
-              </label>
-              {formData.image.map((imageUrl, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => handleImageChange(e, index)}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
-                    <FontAwesomeIcon icon={faTimes} />
-                  </button>
-                </div>
-              ))}
-              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
-                Add Image
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Author
-                </label>
-                <select
-                  id="authorId"
-                  name="authorId"
-                  value={formData.authorId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select an author</option>
-                  {data.authors.map((author) => (
-                    <option key={author.authorId} value={author.authorId}>
-                      {author.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a category</option>
-                  {data.categories.map((category) => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">

@@ -18,7 +18,7 @@ import {
   faImage,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons"
-import React from "react"
+//import React from "react"
 
 interface PostContent {
   type: "text" | "image";
@@ -28,7 +28,7 @@ interface PostContent {
 interface Post {
   id: number
   title: string
-  content: PostContent[] | string
+  content: string // Changed to store HTML string
   image: string[] | string
   authorId: string
   categoryId: string
@@ -85,6 +85,7 @@ const renderMarkdown = (text: string): string => {
   const lines = formattedText.split('\n');
   let result = '';
   let inList = false;
+  let inOrderedList = false;
   
   lines.forEach(line => {
     if (line.startsWith('* ')) {
@@ -93,17 +94,21 @@ const renderMarkdown = (text: string): string => {
         inList = true;
       }
       result += `<li>${line.substring(2)}</li>`;
-    } else if (line.startsWith('1. ')) {
-      if (!inList) {
-        result += '<ol>';
-        inList = true;
-      }
-      result += `<li>${line.substring(3)}</li>`;
+    } else if (line.match(/^\d+\. /)) {
+        if (!inOrderedList) {
+            result += '<ol>';
+            inOrderedList = true;
+        }
+        result += `<li>${line.substring(line.indexOf('.') + 1).trim()}</li>`;
     } else {
-      if (inList) {
-        result += (line.startsWith('1. ') ? '</ol>' : '</ul>');
-        inList = false;
-      }
+        if (inList) {
+            result += '</ul>';
+            inList = false;
+        }
+        if (inOrderedList) {
+            result += '</ol>';
+            inOrderedList = false;
+        }
       if (line.startsWith('# ')) {
         result += `<h1>${line.substring(2)}</h1>`;
       } else if (line.startsWith('## ')) {
@@ -121,9 +126,12 @@ const renderMarkdown = (text: string): string => {
   });
 
   if (inList) {
-    result += '</ul>'; // or </ol>
+    result += '</ul>';
   }
-  
+  if (inOrderedList) {
+    result += '</ol>';
+  }
+
   return result;
 };
 

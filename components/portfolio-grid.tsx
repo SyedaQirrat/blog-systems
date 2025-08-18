@@ -3,13 +3,15 @@
 interface Post {
   id: number
   title: string
-  content: string
-  image: string
+  content: string // Changed to store HTML string
+  image: string[] | string
   authorId: string
   categoryId: string
   tags: string[]
+  isPublished?: boolean
+  publishedDate?: string
+  parentId?: number | null
 }
-
 interface Author {
   authorId: string
   name: string

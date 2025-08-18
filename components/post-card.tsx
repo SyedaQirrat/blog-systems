@@ -12,13 +12,14 @@ interface PostContent {
 interface Post {
   id: number
   title: string
-  content: PostContent[] | string
+  content: string // Changed to store HTML string
   image: string[] | string
   authorId: string
   categoryId: string
   tags: string[]
   isPublished?: boolean
   publishedDate?: string
+  parentId?: number | null
 }
 
 interface PostCardProps {

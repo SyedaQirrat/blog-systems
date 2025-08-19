@@ -3,24 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-
-interface PostContent {
-  type: "text" | "image";
-  value: string;
-}
-
-interface Post {
-  id: number
-  title: string
-  content: string // Changed to store HTML string
-  image: string[] | string
-  authorId: string
-  categoryId: string
-  tags: string[]
-  isPublished?: boolean
-  publishedDate?: string
-  parentId?: number | null
-}
+import { Post } from "@/lib/data-service"
 
 interface PostCardProps {
   post: Post
@@ -39,17 +22,18 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
 
   const getFallbackImage = () => {
     const colors = ["f97316", "fbbf24", "10b981", "3b82f6", "8b5cf6", "ec4899"]
-    const color = colors[post.id % colors.length]
+    const color = colors[post._id.charCodeAt(0) % colors.length]
     return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
   }
   
-  const images = Array.isArray(post.image) ? post.image : [post.image];
+  const images = post.image;
   const firstImage = images.length > 0 ? images[0] : null;
+  const tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
 
-  const contentText = Array.isArray(post.content) ? 
-    post.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : 
-    post.content;
-    
+  const contentText = typeof post.content === 'string' ? 
+    post.content.substring(0, 150) : 
+    '';
+
   return (
     <div className="flex-1 min-h-[400px]">
       <div
@@ -70,7 +54,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
           <div className="absolute inset-0 bg-black opacity-30"></div>
           <div className="relative z-10 flex items-end p-4 min-h-[100px]">
             <h2 className="text-xl font-bold tracking-wide leading-tight">
-              <Link href={`/post/${post.id}`} className="text-white hover:text-[#7ACB59] transition-colors">
+              <Link href={`/post/${post._id}`} className="text-white hover:text-[#7ACB59] transition-colors">
                 {post.title}
               </Link>
             </h2>
@@ -85,14 +69,14 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
           <div className="text-sm text-gray-500">
             Author: {getAuthorName(post.authorId)}
           </div>
-          <div className="text-black text-sm leading-relaxed">{contentText.substring(0, 150)}...</div>
+          <div className="text-black text-sm leading-relaxed">{contentText}...</div>
 
           <div className="pt-4 mt-auto">
             {!post.isPublished && (
               <span className="inline-block bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">DRAFT</span>
             )}
             <Link
-              href={`/post/${post.id}`}
+              href={`/post/${post._id}`}
               className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-black font-medium bg-white hover:bg-gray-100 transition rounded-md"
             >
               Read More

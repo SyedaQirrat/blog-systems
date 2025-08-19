@@ -7,7 +7,7 @@ import Link from "next/link"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes } from "@fortawesome/free-solid-svg-icons"
 import { CKEditorComponent } from "@/components/CKEditorComponent"
-import { loadBlogData, saveBlogData, deleteBlog, BlogData, Post, Series } from "@/lib/data-service"
+import { loadBlogData, createBlog, updateBlog, deleteBlog, BlogData, Post, Series } from "@/lib/data-service"
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
@@ -25,6 +25,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     isPublished: boolean;
     seriesId: string | null;
     image: string[];
+    authorId: string;
+    categoryId: string;
   }>({
     _id: undefined,
     title: "",
@@ -33,7 +35,9 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     tags: "",
     isPublished: false,
     seriesId: null,
-    image: [""]
+    image: [""],
+    authorId: "",
+    categoryId: "",
   })
 
   useEffect(() => {
@@ -51,37 +55,53 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             tags: post.tags,
             isPublished: post.isPublished || false,
             seriesId: post.seriesId || null,
-            image: post.image || ['']
+            image: post.image || [''],
+            authorId: post.authorId,
+            categoryId: post.categoryId
           })
         }
       }
     })
   }, [postId, isEditing])
 
-  const generateUniqueId = () => {
-    if (!data) return "1"
-    const existingIds = data.posts.map((post) => Number.parseInt(post._id))
-    const maxId = Math.max(...existingIds, 0)
-    return String(maxId + 1);
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!data) return
-    const postData = {
-      _id: isEditing ? postId : generateUniqueId(),
-      title: formData.title,
-      content: formData.content,
-      description: formData.description,
-      tags: formData.tags,
-      isPublished: formData.isPublished,
-      seriesId: formData.seriesId,
-      image: formData.image.filter(url => url.length > 0)
-    }
     
+    let idToRedirect = isEditing ? postId : undefined;
+
     try {
-      await saveBlogData(postData as Post);
-      router.push(isEditing ? `/post/${postId}` : "/");
+      if (isEditing) {
+        const postData = {
+          _id: postId,
+          title: formData.title,
+          content: formData.content,
+          description: formData.description,
+          tags: formData.tags,
+          isPublished: formData.isPublished,
+          seriesId: formData.seriesId,
+          image: formData.image.filter(url => url.length > 0),
+          authorId: formData.authorId,
+          categoryId: formData.categoryId
+        }
+        await updateBlog(postData as Post);
+      } else {
+        const postData = {
+          title: formData.title,
+          content: formData.content,
+          description: formData.description,
+          tags: formData.tags,
+          isPublished: formData.isPublished,
+          seriesId: formData.seriesId,
+          image: formData.image.filter(url => url.length > 0),
+          authorId: formData.authorId,
+          categoryId: formData.categoryId
+        }
+        const newPostResponse = await createBlog(postData);
+        idToRedirect = newPostResponse.data._id;
+      }
+      
+      router.push(idToRedirect ? `/post/${idToRedirect}` : "/");
     } catch (error) {
       console.error("Failed to save post:", error);
     }
@@ -119,7 +139,6 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
   if (isCreating || isEditing) {
-    const postToEdit = isEditing ? data?.posts.find((p: Post) => p._id === postId) : null;
     const topLevelPosts = data?.posts.filter(p => !p.seriesId && p._id !== postId) || [];
 
     return (
@@ -160,7 +179,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 <select
                   id="categoryId"
                   name="categoryId"
-                  value={postToEdit?.categoryId || ""}
+                  value={formData.categoryId}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -224,7 +243,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 <select
                   id="authorId"
                   name="authorId"
-                  value={postToEdit?.authorId || ""}
+                  value={formData.authorId}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -291,7 +310,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             <div className="flex gap-4 justify-center pt-8">
               <button
                 type="submit"
-                className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
+                className="px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg cursor-pointer"
                 style={{ backgroundColor: "#7ACB59" }}
               >
                 Update Post

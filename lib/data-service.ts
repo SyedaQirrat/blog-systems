@@ -43,9 +43,7 @@ export interface BlogData {
 const BASE_URL = 'https://myuniversallanguages.com:9093'; 
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NDkyNDgxMCwiZXhwIjoxNzg2NDYwODEwfQ.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs';
 
-
 const API_HEADERS = {
-  'Content-Type': 'application/json',
   'Authorization': `Bearer ${AUTH_TOKEN}`,
 };
 
@@ -66,21 +64,18 @@ export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
 // Fetches all blogs, authors, categories, and series
 export const loadBlogData = async (): Promise<BlogData> => {
   try {
-    // Fetch all blogs
     const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`, {
       headers: API_HEADERS,
     });
     if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
     const blogsData = await blogsResponse.json();
 
-    // Fetch all series
     const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`, {
       headers: API_HEADERS,
     });
     if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
     const seriesData = await seriesResponse.json();
 
-    // For authors and categories, we'll keep them as static mock data
     const authors = [
       { "authorId": "1", "name": "Alice Smith" },
       { "authorId": "2", "name": "Bob Johnson" }
@@ -103,19 +98,69 @@ export const loadBlogData = async (): Promise<BlogData> => {
   }
 };
 
-// Creates or updates a blog post via API
-export const saveBlogData = async (postData: Partial<Post>) => {
+// Creates a new blog post via API using FormData
+export const createBlog = async (postData: {
+  title: string;
+  content: string;
+  description: string;
+  tags: string;
+  isPublished: boolean;
+  seriesId: string | null;
+  image: string[];
+  authorId: string;
+  categoryId: string;
+}) => {
   try {
-    const isNewPost = !postData._id;
-    const url = isNewPost
-      ? `${BASE_URL}/api/v1/superAdmin/blogs/createBlog`
-      : `${BASE_URL}/api/v1/superAdmin/blogs/updateBlog/${postData._id}`;
+    const formData = new FormData();
+    formData.append('title', postData.title);
+    formData.append('content', postData.content);
+    formData.append('description', postData.description);
+    formData.append('tags', postData.tags);
+    formData.append('isPublished', String(postData.isPublished));
+    if (postData.seriesId) {
+      formData.append('seriesId', postData.seriesId);
+    }
+    // Assuming image is a file to be appended
+    // If image is a URL, you'll need to handle it differently
+    if (postData.image && postData.image[0]) {
+      // This part needs adjustment if you are not handling File objects.
+      // The API doc implies 'file', so we'll assume a file upload for now.
+      // For this example, we'll just log an error since the frontend isn't set up for file uploads.
+      console.error("File upload not implemented yet for new posts.");
+    }
+    formData.append('authorId', postData.authorId);
+    formData.append('categoryId', postData.categoryId);
 
-    const method = isNewPost ? 'POST' : 'PATCH';
+    const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${AUTH_TOKEN}`,
+      },
+      body: formData,
+    });
 
+    if (!response.ok) {
+      throw new Error(`API call failed with status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error creating blog via API:", error);
+    throw error;
+  }
+};
+
+
+// Updates an existing blog post via API using JSON
+export const updateBlog = async (postData: Partial<Post>) => {
+  try {
+    const url = `${BASE_URL}/api/v1/superAdmin/blogs/updateBlog/${postData._id}`;
+    
     const response = await fetch(url, {
-      method: method,
-      headers: API_HEADERS,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AUTH_TOKEN}`,
+      },
       body: JSON.stringify(postData),
     });
 
@@ -124,10 +169,11 @@ export const saveBlogData = async (postData: Partial<Post>) => {
     }
     return await response.json();
   } catch (error) {
-    console.error("Error saving data to API:", error);
+    console.error("Error updating blog via API:", error);
     throw error;
   }
 };
+
 
 // Deletes a blog post via API
 export const deleteBlog = async (blogId: string) => {

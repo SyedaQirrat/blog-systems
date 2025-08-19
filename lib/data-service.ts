@@ -10,6 +10,8 @@ export interface Post {
   isPublished?: boolean;
   publishedDate?: string;
   image: string[];
+  authorId: string;
+  categoryId: string;
 }
 
 export interface Author {
@@ -38,8 +40,9 @@ export interface BlogData {
 }
 
 // --- API Configuration ---
-const BASE_URL = 'https://myuniversallanguages.com:9093';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NDkyNDgxMCwiZXhwIjoxNzg2NDYwODEwfQ.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs'; 
+const BASE_URL = 'https://myuniversallanguages.com:9093'; 
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NDkyNDgxMCwiZXhwIjoxNzg2NDYwODEwfQ.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs';
+
 
 const API_HEADERS = {
   'Content-Type': 'application/json',
@@ -63,18 +66,21 @@ export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
 // Fetches all blogs, authors, categories, and series
 export const loadBlogData = async (): Promise<BlogData> => {
   try {
+    // Fetch all blogs
     const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`, {
       headers: API_HEADERS,
     });
     if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
     const blogsData = await blogsResponse.json();
 
+    // Fetch all series
     const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`, {
       headers: API_HEADERS,
     });
     if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
     const seriesData = await seriesResponse.json();
 
+    // For authors and categories, we'll keep them as static mock data
     const authors = [
       { "authorId": "1", "name": "Alice Smith" },
       { "authorId": "2", "name": "Bob Johnson" }

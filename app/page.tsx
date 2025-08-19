@@ -5,53 +5,7 @@ import { Navbar } from "@/components/navbar"
 import PostCard from '@/components/post-card'
 import { PortfolioGrid } from '@/components/portfolio-grid'
 import React from "react"
-
-interface PostContent {
-  type: "text" | "image";
-  value: string;
-}
-
-interface Post {
-  id: number
-  title: string
-  content: string // Changed to store HTML string
-  image: string[] | string
-  authorId: string
-  categoryId: string
-  tags: string[]
-  isPublished?: boolean
-  publishedDate?: string
-  parentId?: number | null
-}
-
-interface Author {
-  authorId: string
-  name: string
-}
-
-interface Category {
-  categoryId: string
-  name: string
-}
-
-interface BlogData {
-  posts: Post[]
-  authors: Author[]
-  categories: Category[]
-}
-
-const loadBlogData = async (): Promise<BlogData> => {
-  const storedData = localStorage.getItem("blogData")
-  if (storedData) {
-    return JSON.parse(storedData)
-  }
-
-  const response = await fetch("/data.json")
-  const data = await response.json()
-
-  localStorage.setItem("blogData", JSON.stringify(data))
-  return data
-}
+import { loadBlogData, BlogData } from "@/lib/data-service"
 
 export default function BlogPage() {
   const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [] })

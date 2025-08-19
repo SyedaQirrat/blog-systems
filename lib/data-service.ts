@@ -38,34 +38,43 @@ export interface BlogData {
 }
 
 // --- API Configuration ---
-const BASE_URL = 'https://myuniversallanguages.com:9093'; 
+const BASE_URL = 'https://myuniversallanguages.com:9093';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NDkyNDgxMCwiZXhwIjoxNzg2NDYwODEwfQ.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs'; 
+
+const API_HEADERS = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${AUTH_TOKEN}`,
+};
 
 // --- API Functions ---
 
 // Fetches a single blog by ID
 export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
-  const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getSingleBlog/${blogId}`);
+  const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getSingleBlog/${blogId}`, {
+    headers: API_HEADERS,
+  });
   if (!response.ok) {
     throw new Error(`Failed to fetch blog with ID ${blogId}: ${response.statusText}`);
   }
   const data = await response.json();
-  return data.data; // Assuming the API returns the blog data in a 'data' field
+  return data.data;
 };
 
 // Fetches all blogs, authors, categories, and series
 export const loadBlogData = async (): Promise<BlogData> => {
   try {
-    // Fetch all blogs
-    const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`);
+    const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`, {
+      headers: API_HEADERS,
+    });
     if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
     const blogsData = await blogsResponse.json();
 
-    // Fetch all series
-    const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`);
+    const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`, {
+      headers: API_HEADERS,
+    });
     if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
     const seriesData = await seriesResponse.json();
 
-    // For authors and categories, we'll keep them as static mock data as per original file
     const authors = [
       { "authorId": "1", "name": "Alice Smith" },
       { "authorId": "2", "name": "Bob Johnson" }
@@ -100,9 +109,7 @@ export const saveBlogData = async (postData: Partial<Post>) => {
 
     const response = await fetch(url, {
       method: method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: API_HEADERS,
       body: JSON.stringify(postData),
     });
 
@@ -121,6 +128,7 @@ export const deleteBlog = async (blogId: string) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/deleteBlog/${blogId}`, {
       method: 'DELETE',
+      headers: API_HEADERS,
     });
 
     if (!response.ok) {
@@ -138,9 +146,7 @@ export const publishBlog = async (blogId: string, isPublished: boolean) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/publishBlog/${blogId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: API_HEADERS,
       body: JSON.stringify({ isPublished }),
     });
 
@@ -159,9 +165,7 @@ export const createSeries = async (seriesData: { title: string; description: str
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/series/createSeries`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: API_HEADERS,
       body: JSON.stringify(seriesData),
     });
 
@@ -178,7 +182,9 @@ export const createSeries = async (seriesData: { title: string; description: str
 // Gets blogs by series ID via API
 export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogsBySeries/${seriesId}`);
+    const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogsBySeries/${seriesId}`, {
+      headers: API_HEADERS,
+    });
     if (!response.ok) {
       throw new Error(`Failed to get blogs by series: ${response.statusText}`);
     }

@@ -5,20 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
-import { loadBlogData, saveBlogData, BlogData } from "@/lib/data-service"
-
-interface Post {
-  id: number
-  title: string
-  content: string
-  image: string[] | string
-  authorId: string
-  categoryId: string
-  tags: string[]
-  isPublished?: boolean
-  publishedDate?: string
-  parentId?: number | null
-}
+import { loadBlogData, deleteBlog, BlogData, Post, Series } from "@/lib/data-service"
 
 export default function PostDetail({ params }: { params: { id: string } }) {
   const [data, setData] = useState<BlogData | null>(null)
@@ -29,24 +16,25 @@ export default function PostDetail({ params }: { params: { id: string } }) {
     loadBlogData().then(setData)
   }, [])
 
-  const deletePost = () => {
+  const handleDeletePost = async () => {
     if (confirm("Are you sure you want to delete this post?")) {
       if (data) {
-        const updatedPosts = data.posts.filter(
-          (post) => post.id.toString() !== params.id
-        )
-        const updatedData = { ...data, posts: updatedPosts }
-        saveBlogData(updatedData)
-        router.push("/")
+        try {
+          await deleteBlog(params.id);
+          router.push("/");
+        } catch (error) {
+          console.error("Failed to delete post:", error);
+          // Handle error display to the user if needed
+        }
       }
     }
   }
 
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
-  const post = data.posts.find((p) => p.id.toString() === params.id)
-  const parentPost = post?.parentId ? data.posts.find(p => p.id === post.parentId) : null;
-  const subBlogs = data.posts.filter(p => p.parentId === post?.id);
+  const post = data.posts.find((p) => p._id === params.id)
+  const parentSeries = post?.seriesId ? data.series.find(s => s._id === post.seriesId) : null;
+  const postsInSeries = post?.seriesId ? data.posts.filter(p => p.seriesId === post.seriesId) : [];
 
   const author = data.authors.find((a) => a.authorId === post?.authorId)
   const category = data.categories.find((c) => c.categoryId === post?.categoryId)
@@ -58,7 +46,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   const getFallbackImage = () => {
     if (!post) return ""
     const colors = ["f97316", "fbbf24", "10b981", "3b82f6", "8b5cf6", "ec4899"]
-    const color = colors[post.id % colors.length]
+    const color = colors[post._id.charCodeAt(0) % colors.length]
     return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
   }
 
@@ -73,6 +61,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   if (!post) return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>
 
   const images = Array.isArray(post.image) ? post.image : [post.image];
+  const tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
 
   return (
     <div className="min-h-screen bg-white">
@@ -81,9 +70,9 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
             ← Back to Blog
           </Link>
-          {parentPost && (
-            <Link href={`/post/${parentPost.id}`} className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 ml-4">
-              ← Back to Parent Blog
+          {parentSeries && (
+            <Link href={`/series/${parentSeries._id}`} className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 ml-4">
+              ← Back to Parent Series: {parentSeries.title}
             </Link>
           )}
 
@@ -100,11 +89,11 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             </button>
             <span>•</span>
             <span>
-              {new Date().toLocaleDateString("en-US", {
+              {post.publishedDate ? new Date(post.publishedDate).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
-              })}
+              }) : 'Date Not Available'}
             </span>
             {post.isPublished ? (
               <span className="text-[#7ACB59]">• Published</span>
@@ -135,14 +124,14 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           <div dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
         
-        {subBlogs.length > 0 && (
+        {postsInSeries.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-4">Related Sub-Blogs</h2>
+            <h2 className="text-2xl font-bold mb-4">Posts in this Series</h2>
             <ul>
-              {subBlogs.map(subBlog => (
-                <li key={subBlog.id} className="mb-2">
-                  <Link href={`/post/${subBlog.id}`} className="text-blue-600 hover:underline">
-                    {subBlog.title}
+              {postsInSeries.map(seriesPost => (
+                <li key={seriesPost._id} className="mb-2">
+                  <Link href={`/post/${seriesPost._id}`} className="text-blue-600 hover:underline">
+                    {seriesPost.title}
                   </Link>
                 </li>
               ))}
@@ -151,7 +140,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         )}
 
         <div className="flex flex-wrap gap-2 mb-12">
-          {post.tags.map((tag, index) => (
+          {tagsArray.map((tag, index) => (
             <button
               key={index}
               onClick={() => handleTagClick(tag)}
@@ -164,14 +153,14 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
         <div className="flex justify-center gap-4 text-center">
           <Link
-            href={`/manage-post/${post.id}`}
+            href={`/manage-post/${post._id}`}
             className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
             style={{ backgroundColor: "#7ACB59" }}
           >
             Edit Post
           </Link>
           <button
-            onClick={deletePost}
+            onClick={handleDeletePost}
             className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
             style={{ backgroundColor: "#ff4d4f" }}
           >

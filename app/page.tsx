@@ -5,10 +5,10 @@ import { Navbar } from "@/components/navbar"
 import PostCard from '@/components/post-card'
 import { PortfolioGrid } from '@/components/portfolio-grid'
 import React from "react"
-import { loadBlogData, BlogData } from "@/lib/data-service"
+import { loadBlogData, BlogData, Post } from "@/lib/data-service"
 
 export default function BlogPage() {
-  const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [] })
+  const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] })
   const [currentCategory, setCurrentCategory] = useState<string>("")
   const [currentTag, setCurrentTag] = useState<string>("")
   const [loading, setLoading] = useState(true)
@@ -44,7 +44,7 @@ export default function BlogPage() {
     
     const matchesSearch = searchQuery
       ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        post.tags.toLowerCase().includes(searchQuery.toLowerCase()) || 
         getCategoryName(post.categoryId).toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
@@ -56,24 +56,24 @@ export default function BlogPage() {
       return post.categoryId === currentCategory
     }
     if (currentTag) {
-      return post.tags.includes(currentTag)
+      return post.tags.split(',').map(tag => tag.trim()).includes(currentTag)
     }
     
     return true
   })
 
-  const postsByParentId: { [key: number]: Post[] } = {}
+  const postsBySeriesId: { [key: string]: Post[] } = {}
   filteredPosts.forEach(post => {
-    const parentId = post.parentId ?? -1;
-    if (!postsByParentId[parentId]) {
-      postsByParentId[parentId] = [];
+    const seriesId = post.seriesId ?? "-1";
+    if (!postsBySeriesId[seriesId]) {
+      postsBySeriesId[seriesId] = [];
     }
-    postsByParentId[parentId].push(post);
+    postsBySeriesId[seriesId].push(post);
   });
   
   const renderPosts = (posts: Post[], depth: number = 0) => {
     return posts.map(post => (
-      <React.Fragment key={post.id}>
+      <React.Fragment key={post._id}>
         <div style={{ marginLeft: `${depth * 20}px` }}>
           <PostCard
             post={post}
@@ -83,7 +83,7 @@ export default function BlogPage() {
             onTagClick={handleTagClick}
           />
         </div>
-        {postsByParentId[post.id] && renderPosts(postsByParentId[post.id], depth + 1)}
+        {postsBySeriesId[post._id] && renderPosts(postsBySeriesId[post._id], depth + 1)}
       </React.Fragment>
     ));
   };
@@ -172,7 +172,7 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {renderPosts(postsByParentId[-1] || [])}
+            {renderPosts(postsBySeriesId["-1"] || [])}
           </div>
         )}
       </section>

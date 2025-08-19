@@ -7,52 +7,7 @@ import Link from "next/link"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTimes } from "@fortawesome/free-solid-svg-icons"
 import { CKEditorComponent } from "@/components/CKEditorComponent"
-
-interface Post {
-  id: number
-  title: string
-  content: string
-  image: string[] | string
-  authorId: string
-  categoryId: string
-  tags: string[]
-  isPublished?: boolean
-  publishedDate?: string
-  parentId?: number | null
-}
-
-interface Author {
-  authorId: string
-  name: string
-}
-
-interface Category {
-  categoryId: string
-  name: string
-}
-
-interface BlogData {
-  posts: Post[]
-  authors: Author[]
-  categories: Category[]
-}
-
-const loadBlogData = async (): Promise<BlogData> => {
-  const storedData = localStorage.getItem("blogData")
-  if (storedData) {
-    return JSON.parse(storedData)
-  }
-
-  const response = await fetch("/data.json")
-  const data = await response.json()
-
-  localStorage.setItem("blogData", JSON.stringify(data))
-  return data
-}
-
-const saveBlogData = (data: BlogData) => {
-  localStorage.setItem("blogData", JSON.stringify(data))
-}
+import { loadBlogData, saveBlogData, deleteBlog, BlogData, Post, Series } from "@/lib/data-service"
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
   const router = useRouter()
@@ -62,25 +17,23 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
   const [data, setData] = useState<BlogData | null>(null)
   const [formData, setFormData] = useState<{
+    _id?: string;
     title: string;
     content: string;
-    image: string[];
-    authorId: string;
-    categoryId: string;
+    description: string;
     tags: string;
     isPublished: boolean;
-    publishedDate: string;
-    parentId: number | null | undefined
+    seriesId: string | null;
+    image: string[];
   }>({
+    _id: undefined,
     title: "",
     content: "",
-    image: [""],
-    authorId: "",
-    categoryId: "",
+    description: "",
     tags: "",
     isPublished: false,
-    publishedDate: "",
-    parentId: undefined
+    seriesId: null,
+    image: [""]
   })
 
   useEffect(() => {
@@ -88,20 +41,17 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       setData(blogData)
 
       if (isEditing && postId) {
-        const post = blogData.posts.find((p: Post) => p.id.toString() === postId)
+        const post = blogData.posts.find((p: Post) => p._id === postId)
         if (post) {
-          const contentString = Array.isArray(post.content) ? post.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : post.content as string;
-          const imageArray = Array.isArray(post.image) ? post.image : [post.image as string];
           setFormData({
+            _id: post._id,
             title: post.title,
-            content: contentString,
-            image: imageArray,
-            authorId: post.authorId,
-            categoryId: post.categoryId,
-            tags: post.tags.join(", "),
+            content: post.content,
+            description: post.description,
+            tags: post.tags,
             isPublished: post.isPublished || false,
-            publishedDate: post.publishedDate || "",
-            parentId: post.parentId
+            seriesId: post.seriesId || null,
+            image: post.image || ['']
           })
         }
       }
@@ -109,45 +59,35 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   }, [postId, isEditing])
 
   const generateUniqueId = () => {
-    if (!data) return 1
-    const existingIds = data.posts.map((post) => Number.parseInt(post.id.toString()))
+    if (!data) return "1"
+    const existingIds = data.posts.map((post) => Number.parseInt(post._id))
     const maxId = Math.max(...existingIds, 0)
-    return maxId + 1
+    return String(maxId + 1);
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!data) return
-    const tags = formData.tags.split(",").map((tag) => tag.trim()).filter((tag) => tag.length > 0)
-    const images = formData.image.filter(url => url.length > 0);
     const postData = {
-      id: isEditing ? Number.parseInt(postId!) : generateUniqueId(),
+      _id: isEditing ? postId : generateUniqueId(),
       title: formData.title,
       content: formData.content,
-      image: images,
-      authorId: formData.authorId,
-      categoryId: formData.categoryId,
-      tags: tags,
+      description: formData.description,
+      tags: formData.tags,
       isPublished: formData.isPublished,
-      publishedDate: formData.publishedDate,
-      parentId: formData.parentId
+      seriesId: formData.seriesId,
+      image: formData.image.filter(url => url.length > 0)
     }
-    let updatedData: BlogData
-    if (isEditing) {
-      updatedData = { ...data, posts: data.posts.map((post) => (post.id.toString() === postId ? postData : post)), }
-    } else {
-      updatedData = { ...data, posts: [postData, ...data.posts], }
-    }
-    saveBlogData(updatedData)
-    setData(updatedData)
-    if (isEditing) {
-      router.push(`/post/${postId}`)
-    } else {
-      router.push("/")
+    
+    try {
+      await saveBlogData(postData as Post);
+      router.push(isEditing ? `/post/${postId}` : "/");
+    } catch (error) {
+      console.error("Failed to save post:", error);
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | React.ChangeEvent<HTMLSelectElement> | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value, }))
   }
@@ -179,9 +119,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   if (!data) return <div className="min-h-screen bg-white flex items-center justify-center">Loading...</div>
 
   if (isCreating || isEditing) {
-    const postToEdit = isEditing ? data?.posts.find((p: Post) => p.id.toString() === postId) : null;
-    const contentString = isEditing && postToEdit ? (Array.isArray(postToEdit.content) ? postToEdit.content.filter(block => block.type === 'text').map(block => block.value).join('\n') : postToEdit.content) as string : formData.content;
-    const topLevelPosts = data?.posts.filter(p => !p.parentId && p.id.toString() !== postId) || [];
+    const postToEdit = isEditing ? data?.posts.find((p: Post) => p._id === postId) : null;
+    const topLevelPosts = data?.posts.filter(p => !p.seriesId && p._id !== postId) || [];
 
     return (
       <div className="min-h-screen bg-white">
@@ -221,7 +160,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 <select
                   id="categoryId"
                   name="categoryId"
-                  value={formData.categoryId}
+                  value={postToEdit?.categoryId || ""}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -262,19 +201,19 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                           
 
             <div>
-              <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Blog
+              <label htmlFor="seriesId" className="block text-sm font-medium text-gray-700 mb-2">
+                Parent Blog (Series)
               </label>
               <select
-                id="parentId"
-                name="parentId"
-                value={formData.parentId || ""}
-                onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value ? Number(e.target.value) : null }))}
+                id="seriesId"
+                name="seriesId"
+                value={formData.seriesId || ""}
+                onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">None</option>
                 {topLevelPosts.map(post => (
-                  <option key={post.id} value={post.id}>{post.title}</option>
+                  <option key={post._id} value={post._id}>{post.title}</option>
                 ))}
               </select>
             </div>
@@ -285,7 +224,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                 <select
                   id="authorId"
                   name="authorId"
-                  value={formData.authorId}
+                  value={postToEdit?.authorId || ""}
                   onChange={handleChange}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -304,7 +243,21 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Content
               </label>
-              <CKEditorComponent value={contentString} onChange={handleEditorChange} />
+              <CKEditorComponent value={formData.content} onChange={handleEditorChange} />
+            </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                placeholder="Enter a short description of the post..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
             <div>
               <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
@@ -356,6 +309,13 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     );
   }
 
+  const deleteAndRedirect = async (id: string) => {
+    if (confirm("Are you sure you want to delete this post?")) {
+      await deleteBlog(id);
+      router.push('/manage-post/all');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
@@ -382,22 +342,30 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
         </div>
         <ul className="space-y-4">
           {data.posts.map((post) => (
-            <li key={post.id} className="border-b pb-4 last:border-b-0 last:pb-0">
+            <li key={post._id} className="border-b pb-4 last:border-b-0 last:pb-0">
               <div className="flex justify-between items-center">
                 <div>
-                  <Link href={`/manage-post/${post.id}`} className="text-lg font-bold text-gray-800 hover:text-blue-500">
+                  <Link href={`/manage-post/${post._id}`} className="text-lg font-bold text-gray-800 hover:text-blue-500">
                     {post.title}
                   </Link>
                   <p className="text-sm text-gray-500">
                     {post.isPublished ? "Published" : "Draft"}
                   </p>
                 </div>
-                <Link
-                  href={`/manage-post/${post.id}`}
-                  className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
-                >
-                  Edit
-                </Link>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/manage-post/${post._id}`}
+                    className="px-3 py-1 text-sm bg-gray-100 rounded-md hover:bg-gray-200"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => deleteAndRedirect(post._id)}
+                    className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </li>
           ))}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
+import { loadBlogData, saveBlogData, BlogData } from "@/lib/data-service"
 
 interface Post {
   id: number
@@ -17,39 +18,6 @@ interface Post {
   isPublished?: boolean
   publishedDate?: string
   parentId?: number | null
-}
-
-interface Author {
-  authorId: string
-  name: string
-}
-
-interface Category {
-  categoryId: string
-  name: string
-}
-
-interface BlogData {
-  posts: Post[]
-  authors: Author[]
-  categories: Category[]
-}
-
-const loadBlogData = async (): Promise<BlogData> => {
-  const storedData = localStorage.getItem("blogData")
-  if (storedData) {
-    return JSON.parse(storedData)
-  }
-
-  const response = await fetch("/data.json")
-  const data = await response.json()
-
-  localStorage.setItem("blogData", JSON.stringify(data))
-  return data
-}
-
-const saveBlogData = (data: BlogData) => {
-  localStorage.setItem("blogData", JSON.stringify(data))
 }
 
 export default function PostDetail({ params }: { params: { id: string } }) {

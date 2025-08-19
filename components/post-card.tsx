@@ -9,7 +9,7 @@ interface PostCardProps {
   post: Post
   getAuthorName: (authorId: string) => string
   getCategoryName: (categoryId: string) => string
-  onCategoryClick: (categoryId: string) => void
+  onCategoryClick: (category: string) => void
   onTagClick: (tag: string) => void
 }
 
@@ -65,10 +65,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
         {/* Main content section */}
         <div className="p-6 space-y-4 flex flex-col flex-grow">
           <div className="text-sm text-gray-500">
-            Category: <button onClick={() => onCategoryClick(post.categoryId)} className="underline font-bold text-black-600 hover:text-black transition-colors">{getCategoryName(post.categoryId)}</button>
-          </div>
-          <div className="text-sm text-gray-500">
-            Author: {getAuthorName(post.authorId)}
+            Category: <button onClick={() => onCategoryClick(post.category)} className="underline font-bold text-black-600 hover:text-black transition-colors">{post.category}</button>
           </div>
           <div className="text-black text-sm leading-relaxed">{contentText}...</div>
 

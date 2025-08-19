@@ -45,7 +45,7 @@ export default function BlogPage() {
     const matchesSearch = searchQuery
       ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
         post.tags.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        getCategoryName(post.categoryId).toLowerCase().includes(searchQuery.toLowerCase())
+        post.category.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
     if (!matchesSearch) {
@@ -53,7 +53,7 @@ export default function BlogPage() {
     }
 
     if (currentCategory) {
-      return post.categoryId === currentCategory
+      return post.category === currentCategory
     }
     if (currentTag) {
       return post.tags.split(',').map(tag => tag.trim()).includes(currentTag)
@@ -88,8 +88,8 @@ export default function BlogPage() {
     ));
   };
   
-  const handleCategoryClick = (categoryId: string) => {
-    setCurrentCategory(categoryId)
+  const handleCategoryClick = (category: string) => {
+    setCurrentCategory(category)
     setCurrentTag("")
     setSearchQuery("")
   }
@@ -150,7 +150,7 @@ export default function BlogPage() {
               {(currentCategory || currentTag) && (
                 <>
                   <span className="text-sm text-gray-600">
-                    {currentCategory ? `Category: ${getCategoryName(currentCategory)}` : `Tag: ${currentTag}`}
+                    {currentCategory ? `Category: ${currentCategory}` : `Tag: ${currentTag}`}
                   </span>
                   <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
                     Clear filter

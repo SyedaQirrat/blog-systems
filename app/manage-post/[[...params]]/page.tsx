@@ -24,20 +24,18 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     tags: string;
     isPublished: boolean;
     seriesId: string | null;
-    image: string[];
-    authorId: string;
-    categoryId: string;
+    file: File | null;
+    category: string;
   }>({
     _id: undefined,
     title: "",
     content: "",
     description: "",
     tags: "",
-    isPublished: false,
+    isPublished: true, 
     seriesId: null,
-    image: [""],
-    authorId: "",
-    categoryId: "",
+    file: null, 
+    category: ""
   })
 
   useEffect(() => {
@@ -55,9 +53,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             tags: post.tags,
             isPublished: post.isPublished || false,
             seriesId: post.seriesId || null,
-            image: post.image || [''],
-            authorId: post.authorId,
-            categoryId: post.categoryId
+            file: null, 
+            category: post.category
           })
         }
       }
@@ -80,9 +77,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           tags: formData.tags,
           isPublished: formData.isPublished,
           seriesId: formData.seriesId,
-          image: formData.image.filter(url => url.length > 0),
-          authorId: formData.authorId,
-          categoryId: formData.categoryId
+          image: formData.file ? [URL.createObjectURL(formData.file)] : [],
+          category: formData.category
         }
         await updateBlog(postData as Post);
       } else {
@@ -93,9 +89,8 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           tags: formData.tags,
           isPublished: formData.isPublished,
           seriesId: formData.seriesId,
-          image: formData.image.filter(url => url.length > 0),
-          authorId: formData.authorId,
-          categoryId: formData.categoryId
+          file: formData.file, 
+          category: formData.category
         }
         const newPostResponse = await createBlog(postData);
         idToRedirect = newPostResponse.data._id;
@@ -112,24 +107,15 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     setFormData((prev) => ({ ...prev, [name]: value, }))
   }
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFormData(prev => ({ ...prev, file: e.target.files[0] }));
+    }
+  };
+
   const handleEditorChange = (data: string) => {
     setFormData(prev => ({ ...prev, content: data }));
   };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const newImages = [...formData.image];
-    newImages[index] = e.target.value;
-    setFormData(prev => ({ ...prev, image: newImages }));
-  }
-
-  const handleAddImage = () => {
-    setFormData(prev => ({ ...prev, image: [...prev.image, ""] }));
-  }
-
-  const handleRemoveImage = (index: number) => {
-    const newImages = formData.image.filter((_, i) => i !== index);
-    setFormData(prev => ({ ...prev, image: newImages }));
-  }
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
@@ -173,90 +159,55 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
               />
             </div>
             <div>
-                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Category
-                </label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a category</option>
-                  {data.categories.map((category) => (
-                    <option key={category.categoryId} value={category.categoryId}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Featured Image URL
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                Category
               </label>
-              {formData.image.map((imageUrl, index) => (
-                <div key={index} className="flex items-center gap-2 mb-2">
+              <input
+                type="text"
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+                placeholder="Enter category name..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            {isCreating && (
+                <div>
+                  <label htmlFor="file" className="block text-sm font-medium text-gray-700 mb-2">
+                    Featured Image
+                  </label>
                   <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => handleImageChange(e, index)}
-                    placeholder="https://example.com/image.jpg"
+                    type="file"
+                    id="file"
+                    name="file"
+                    onChange={handleFileChange}
+                    required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                  <button type="button" onClick={() => handleRemoveImage(index)} className="text-red-500 hover:text-red-700">
-                    <FontAwesomeIcon icon={faTimes} />
-                  </button>
                 </div>
-              ))}
-              <button type="button" onClick={handleAddImage} className="mt-2 px-4 py-2 border border-gray-300 rounded-lg">
-                Add Image
-              </button>
-            </div>
+              )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          
-
-            <div>
-              <label htmlFor="seriesId" className="block text-sm font-medium text-gray-700 mb-2">
-                Parent Blog (Series)
-              </label>
-              <select
-                id="seriesId"
-                name="seriesId"
-                value={formData.seriesId || ""}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">None</option>
-                {topLevelPosts.map(post => (
-                  <option key={post._id} value={post._id}>{post.title}</option>
-                ))}
-              </select>
-            </div>
               <div>
-                <label htmlFor="authorId" className="block text-sm font-medium text-gray-700 mb-2">
-                  Author
+                <label htmlFor="seriesId" className="block text-sm font-medium text-gray-700 mb-2">
+                  Parent Blog (Series)
                 </label>
                 <select
-                  id="authorId"
-                  name="authorId"
-                  value={formData.authorId}
+                  id="seriesId"
+                  name="seriesId"
+                  value={formData.seriesId || ""}
                   onChange={handleChange}
-                  required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value="">Select an author</option>
-                  {data.authors.map((author) => (
-                    <option key={author.authorId} value={author.authorId}>
-                      {author.name}
-                    </option>
+                  <option value="">None</option>
+                  {topLevelPosts.map(post => (
+                    <option key={post._id} value={post._id}>{post.title}</option>
                   ))}
                 </select>
               </div>
-
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

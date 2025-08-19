@@ -1,17 +1,16 @@
 // lib/data-service.ts
 
 export interface Post {
-  _id: string; 
+  _id: string;
   title: string;
   content: string;
   description: string;
-  tags: string; 
-  seriesId: string | null; 
+  tags: string;
+  seriesId: string | null;
   isPublished?: boolean;
   publishedDate?: string;
   image: string[];
-  authorId: string;
-  categoryId: string;
+  category: string; // Changed from categoryId
 }
 
 export interface Author {
@@ -40,8 +39,9 @@ export interface BlogData {
 }
 
 // --- API Configuration ---
-const BASE_URL = 'https://myuniversallanguages.com:9093'; 
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NDkyNDgxMCwiZXhwIjoxNzg2NDYwODEwfQ.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs';
+const BASE_URL = 'https://myuniversallanguages.com:9093';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2NyZWVuIjp0cnVlLCJpYXQiOjE3NTQ5MjQ4MTAsImV4cCI6MTc4NjQ2MDgxMH0.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs';
+
 
 const API_HEADERS = {
   'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -69,13 +69,16 @@ export const loadBlogData = async (): Promise<BlogData> => {
     });
     if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
     const blogsData = await blogsResponse.json();
+    console.log("Fetched blogs:", blogsData);
 
     const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`, {
       headers: API_HEADERS,
     });
     if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
     const seriesData = await seriesResponse.json();
+    console.log("Fetched series:", seriesData);
 
+    // For authors and categories, we'll keep them as static mock data
     const authors = [
       { "authorId": "1", "name": "Alice Smith" },
       { "authorId": "2", "name": "Bob Johnson" }
@@ -106,9 +109,8 @@ export const createBlog = async (postData: {
   tags: string;
   isPublished: boolean;
   seriesId: string | null;
-  image: string[];
-  authorId: string;
-  categoryId: string;
+  file: File | null;
+  category: string; // Changed from categoryId
 }) => {
   try {
     const formData = new FormData();
@@ -120,16 +122,10 @@ export const createBlog = async (postData: {
     if (postData.seriesId) {
       formData.append('seriesId', postData.seriesId);
     }
-    // Assuming image is a file to be appended
-    // If image is a URL, you'll need to handle it differently
-    if (postData.image && postData.image[0]) {
-      // This part needs adjustment if you are not handling File objects.
-      // The API doc implies 'file', so we'll assume a file upload for now.
-      // For this example, we'll just log an error since the frontend isn't set up for file uploads.
-      console.error("File upload not implemented yet for new posts.");
+    if (postData.file) {
+      formData.append('file', postData.file);
     }
-    formData.append('authorId', postData.authorId);
-    formData.append('categoryId', postData.categoryId);
+    formData.append('category', postData.category); // Changed from categoryId
 
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
       method: 'POST',
@@ -140,7 +136,8 @@ export const createBlog = async (postData: {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed with status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(`API call failed with status: ${response.status}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();
   } catch (error) {
@@ -165,7 +162,8 @@ export const updateBlog = async (postData: Partial<Post>) => {
     });
 
     if (!response.ok) {
-      throw new Error(`API call failed with status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(`API call failed with status: ${response.status}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();
   } catch (error) {
@@ -184,7 +182,8 @@ export const deleteBlog = async (blogId: string) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete blog: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Failed to delete blog: ${response.statusText}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();
   } catch (error) {
@@ -203,7 +202,8 @@ export const publishBlog = async (blogId: string, isPublished: boolean) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to publish blog: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Failed to publish blog: ${response.statusText}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();
   } catch (error) {
@@ -217,12 +217,15 @@ export const createSeries = async (seriesData: { title: string; description: str
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/series/createSeries`, {
       method: 'POST',
-      headers: API_HEADERS,
+      headers: {
+        'Authorization': `Bearer ${AUTH_TOKEN}`,
+      },
       body: JSON.stringify(seriesData),
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create series: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Failed to create series: ${response.statusText}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();
   } catch (error) {
@@ -238,7 +241,8 @@ export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
       headers: API_HEADERS,
     });
     if (!response.ok) {
-      throw new Error(`Failed to get blogs by series: ${response.statusText}`);
+      const errorData = await response.json();
+      throw new Error(`Failed to get blogs by series: ${response.statusText}, message: ${errorData.message || response.statusText}`);
     }
     const data = await response.json();
     return data.data;

@@ -22,6 +22,7 @@ export default function PostCard({ post, getAuthorName, getCategoryName, onCateg
 
   const getFallbackImage = () => {
     const colors = ["f97316", "fbbf24", "10b981", "3b82f6", "8b5cf6", "ec4899"]
+    // Using a consistent value from post._id to generate a color
     const color = colors[post._id.charCodeAt(0) % colors.length]
     return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
   }

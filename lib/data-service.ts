@@ -40,8 +40,7 @@ export interface BlogData {
 
 // --- API Configuration ---
 const BASE_URL = 'https://myuniversallanguages.com:9093';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMjljY2NkZmI5NTY2OTcxYTY2ZTMiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoiY29udGFjdEBpOGlzLmNvbSIsIm5hbWUiOiJLYW1yYW4gVGFyaXEiLCJ1c2VyVHlwZSI6Im93bmVyIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2NyZWVuIjp0cnVlLCJpYXQiOjE3NTQ5MjQ4MTAsImV4cCI6MTc4NjQ2MDgxMH0.Yk3-xh_4JxH2UFEH-A46ScLaSSkaM-0P02qX0gh7Dcs';
-
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMmRhOWFjOGQ5ZDY4MGNmMjhmZWUiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoibmFnaW5hQGk4aXMuY29tIiwibmFtZSI6Ik5hZ2luYSBBZnphbCIsInVzZXJUeXBlIjoiYWRtaW4iLCJjb21wYW55IjoiaThpcy5jb20iLCJ0aW1lem9uZU9mZnNldCI6NSwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NTYwNjE4MSwiZXhwIjoxNzg3MTQyMTgxfQ.9sMx2WqXzeG3p26CT2SWw6LzxZez3hJUxiY5o21mmtA';
 
 const API_HEADERS = {
   'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -67,8 +66,9 @@ export const loadBlogData = async (): Promise<BlogData> => {
     const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`, {
       headers: API_HEADERS,
     });
-    if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
     const blogsData = await blogsResponse.json();
+    if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
+    
     console.log("Fetched blogs:", blogsData);
 
     const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`, {

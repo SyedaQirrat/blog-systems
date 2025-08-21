@@ -233,3 +233,41 @@ export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
     return [];
   }
 };
+
+// ... existing interfaces (Post, Author, Category, Series, BlogData)
+
+export interface Comment {
+  _id: string;
+  blogId: string;
+  authorName: string;
+  authorEmail: string;
+  content: string;
+  createdAt: string; // ISO string date
+  // Add other fields like parentCommentId for replies, status (approved/pending) if needed
+}
+
+// ... existing API functions (fetchSingleBlog, loadBlogData, createBlog, etc.)
+
+// Placeholder API functions for comments (add these)
+export const fetchCommentsForBlog = async (blogId: string): Promise<Comment[]> => {
+  // This will be replaced with actual API call later
+  console.log(`Fetching comments for blog ID: ${blogId}`);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([
+        { _id: "c1", blogId, authorName: "John Doe", authorEmail: "john@example.com", content: "Great post!", createdAt: new Date().toISOString() },
+        { _id: "c2", blogId, authorName: "Jane Smith", authorEmail: "jane@example.com", content: "Very insightful, thanks!", createdAt: new Date(Date.now() - 3600000).toISOString() },
+      ]);
+    }, 500);
+  });
+};
+
+export const createComment = async (commentData: Omit<Comment, "_id" | "createdAt">): Promise<Comment> => {
+  // This will be replaced with actual API call later
+  console.log("Creating comment:", commentData);
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({ ...commentData, _id: `c${Date.now()}`, createdAt: new Date().toISOString() });
+    }, 500);
+  });
+};

@@ -108,37 +108,32 @@ export const createBlog = async (postData: {
   description: string;
   tags: string;
   isPublished: boolean;
-  seriesId: string | null;
-  file: File | null;
-  category: string; // Changed from categoryId
+  seriesId?: string | null;
 }) => {
   try {
-    const formData = new FormData();
-    formData.append('title', postData.title);
-    formData.append('content', postData.content);
-    formData.append('description', postData.description);
-    formData.append('tags', postData.tags);
-    formData.append('isPublished', String(postData.isPublished));
-    if (postData.seriesId) {
-      formData.append('seriesId', postData.seriesId);
-    }
-    if (postData.file) {
-      formData.append('file', postData.file);
-    }
-    formData.append('category', postData.category); // Changed from categoryId
+    const payload = {
+      title: postData.title,
+      content: postData.content,
+      description: postData.description,
+      tags: postData.tags,
+      seriesId: postData.seriesId || null,
+      isPublished: String(postData.isPublished), // must be "true"/"false"
+    };
 
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${AUTH_TOKEN}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`API call failed with status: ${response.status}, message: ${errorData.message || response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`API call failed with status: ${response.status}, message: ${errorText}`);
     }
+
     return await response.json();
   } catch (error) {
     console.error("Error creating blog via API:", error);

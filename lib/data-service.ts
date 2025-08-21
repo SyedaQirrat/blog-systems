@@ -144,7 +144,7 @@ export const createBlog = async (postData: {
 // Updates an existing blog post via API using JSON
 export const updateBlog = async (postData: Partial<Post>) => {
   try {
-    const url = `${BASE_URL}/api/v1/superAdmin/blogs/updateBlog/${postData._id}`;
+    const url = `${BASE_URL}/api/v1/superAdmin/blogs/updateBlogs/${postData._id}`;
     
     const response = await fetch(url, {
       method: 'PATCH',

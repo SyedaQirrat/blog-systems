@@ -39,33 +39,29 @@ export default function BlogPage() {
   
   const filteredPosts = data.posts
     .filter((post) => {
-      // Correctly handle undefined isPublished property
+      // First, filter by draft status
       if (!showDrafts && !(post.isPublished ?? false)) {
         return false;
       }
-      
-      // Safely perform string operations on post.tags and post.category
-      const postTagsString = typeof post.tags === 'string' ? post.tags : '';
-      const postCategoryString = typeof post.category === 'string' ? post.category : '';
 
+      // Prepare a lowercase query and string versions of post data for robust searching
+      const query = searchQuery.toLowerCase();
+      const postTitleString = post.title?.toLowerCase() ?? '';
+      const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
+      const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
+      
+      // Then, filter by search query
       const matchesSearch = searchQuery
-        ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          postTagsString.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          postCategoryString.toLowerCase().includes(searchQuery.toLowerCase())
+        ? postTitleString.includes(query) || 
+          postTagsString.includes(query) || 
+          postCategoryString.includes(query)
         : true;
 
-      if (!matchesSearch) {
-          return false;
-      }
+      // Finally, filter by category or tag
+      const matchesCategory = currentCategory ? postCategoryString === currentCategory.toLowerCase() : true;
+      const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
 
-      if (currentCategory) {
-        return postCategoryString === currentCategory
-      }
-      if (currentTag) {
-        return postTagsString.split(',').map(tag => tag.trim()).includes(currentTag)
-      }
-      
-      return true
+      return matchesSearch && matchesCategory && matchesTag;
     })
     // Sort posts by publishedDate to show the newest ones first
     .sort((a, b) => {

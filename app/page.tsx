@@ -44,9 +44,11 @@ export default function BlogPage() {
         return false;
       }
       
+      // Safely perform string operations on post.tags
+      const postTagsString = typeof post.tags === 'string' ? post.tags : '';
       const matchesSearch = searchQuery
         ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          (post.tags ?? "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+          postTagsString.toLowerCase().includes(searchQuery.toLowerCase()) || 
           post.category.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
 
@@ -58,7 +60,7 @@ export default function BlogPage() {
         return post.category === currentCategory
       }
       if (currentTag) {
-        return (post.tags ?? "").split(',').map(tag => tag.trim()).includes(currentTag)
+        return postTagsString.split(',').map(tag => tag.trim()).includes(currentTag)
       }
       
       return true

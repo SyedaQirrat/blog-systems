@@ -236,6 +236,35 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                     )}
                   />
                 </div>
+                
+                {/* New FormField for Category */}
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {data?.categories.map((c) => (
+                            <SelectItem key={c.categoryId} value={c.name}>
+                              {c.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 {/* File input for images - needs to be handled separately as it's not a standard input field for react-hook-form */}
                 <div className="space-y-2">

@@ -1,5 +1,3 @@
-// lib/data-service.ts
-
 export interface Post {
   _id: string;
   title: string;
@@ -11,6 +9,7 @@ export interface Post {
   publishedDate?: string;
   image: string[];
   category: string; // Changed from categoryId
+  file?: File | null;
 }
 
 export interface Author {

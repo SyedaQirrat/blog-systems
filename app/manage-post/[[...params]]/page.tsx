@@ -70,7 +70,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
     try {
       if (isEditing) {
-        const postData: Post = {
+        const postData = {
           _id: postId!,
           title: formData.title,
           content: formData.content,
@@ -79,12 +79,10 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           isPublished: formData.isPublished,
           seriesId: formData.seriesId,
           category: formData.category,
-          file: formData.file,
-          image: formData.file ? [URL.createObjectURL(formData.file)] : []
         };
         await updateBlog(postData);
       } else {
-        const postData: Omit<Post, "_id"> = {
+        const postData = {
           title: formData.title,
           content: formData.content,
           description: formData.description,
@@ -92,8 +90,6 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           isPublished: formData.isPublished,
           seriesId: formData.seriesId,
           category: formData.category,
-          file: formData.file,
-          image: formData.file ? [URL.createObjectURL(formData.file)] : []
         };
         const newPostResponse = await createBlog(postData);
         idToRedirect = newPostResponse.data._id;
@@ -111,4 +107,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e
+    const file = e.target.files ? e.target.files[0] : null;
+    setFormData((prev) => ({ ...prev, file }));
+  };
+}

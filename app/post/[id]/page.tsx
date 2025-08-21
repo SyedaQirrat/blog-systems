@@ -67,6 +67,10 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             ) : (
               <span className="text-red-500">• Draft</span>
             )}
+            {/* Display the post category */}
+            {post.category && (
+              <span className="text-[#7ACB59]">• {post.category}</span>
+            )}
           </div>
         </div>
       </div>

@@ -236,7 +236,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                     )}
                   />
                 </div>
-                
+
                 {/* New FormField for Category */}
                 <FormField
                   control={form.control}

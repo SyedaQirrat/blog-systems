@@ -112,15 +112,16 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           content: values.content ?? "",
         });
       } else {
-        const response = await createBlog({
+        await createBlog({
           title: values.title,
           content: values.content ?? "",
           description: values.description ?? "",
           tags: values.tags ?? "",
           seriesId: values.seriesId,
           isPublished: values.isPublished,
+          file: file,
         });
-        router.push(`/post/${response.data._id}`);
+        router.push("/");
         return;
       }
       router.push("/");

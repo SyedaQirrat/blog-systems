@@ -8,7 +8,7 @@ export interface Post {
   isPublished?: boolean;
   publishedDate?: string;
   image: string[];
-  category: string; // Changed from categoryId
+  category: string;
   file?: File | null;
 }
 
@@ -37,7 +37,6 @@ export interface BlogData {
   series: Series[];
 }
 
-// --- API Configuration ---
 const BASE_URL = 'https://myuniversallanguages.com:9093';
 const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMmRhOWFjOGQ5ZDY4MGNmMjhmZWUiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoibmFnaW5hQGk4aXMuY29tIiwibmFtZSI6Ik5hZ2luYSBBZnphbCIsInVzZXJUeXBlIjoiYWRtaW4iLCJjb21wYW55IjoiaThpcy5jb20iLCJ0aW1lem9uZU9mZnNldCI6NSwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NTYwNjE4MSwiZXhwIjoxNzg3MTQyMTgxfQ.9sMx2WqXzeG3p26CT2SWw6LzxZez3hJUxiY5o21mmtA';
 
@@ -45,9 +44,6 @@ const API_HEADERS = {
   'Authorization': `Bearer ${AUTH_TOKEN}`,
 };
 
-// --- API Functions ---
-
-// Fetches a single blog by ID
 export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
   const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getSingleBlog/${blogId}`, {
     headers: API_HEADERS,
@@ -59,7 +55,6 @@ export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
   return data.data;
 };
 
-// Fetches all blogs, authors, categories, and series
 export const loadBlogData = async (): Promise<BlogData> => {
   try {
     const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`, {
@@ -77,7 +72,6 @@ export const loadBlogData = async (): Promise<BlogData> => {
     const seriesData = await seriesResponse.json();
     console.log("Fetched series:", seriesData);
 
-    // For authors and categories, we'll keep them as static mock data
     const authors = [
       { "authorId": "1", "name": "Alice Smith" },
       { "authorId": "2", "name": "Bob Johnson" }
@@ -100,7 +94,6 @@ export const loadBlogData = async (): Promise<BlogData> => {
   }
 };
 
-// Creates a new blog post via API using FormData
 export const createBlog = async (postData: {
   title: string;
   content: string;
@@ -108,24 +101,24 @@ export const createBlog = async (postData: {
   tags: string;
   isPublished: boolean;
   seriesId?: string | null;
+  file?: File | null;
 }) => {
   try {
-    const payload = {
-      title: postData.title,
-      content: postData.content,
-      description: postData.description,
-      tags: postData.tags,
-      seriesId: postData.seriesId || null,
-      isPublished: postData.isPublished,
-    };
-
+    const formData = new FormData();
+    formData.append('title', postData.title);
+    formData.append('content', postData.content);
+    formData.append('description', postData.description);
+    formData.append('tags', postData.tags);
+    if (postData.seriesId) formData.append('seriesId', postData.seriesId);
+    formData.append('isPublished', String(postData.isPublished));
+    if (postData.file) formData.append('file', postData.file);
+    
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${AUTH_TOKEN}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -141,7 +134,6 @@ export const createBlog = async (postData: {
 };
 
 
-// Updates an existing blog post via API using JSON
 export const updateBlog = async (postData: Partial<Post>) => {
   try {
     const url = `${BASE_URL}/api/v1/superAdmin/blogs/updateBlogs/${postData._id}`;
@@ -156,7 +148,6 @@ export const updateBlog = async (postData: Partial<Post>) => {
     });
 
     if (!response.ok) {
-      // Check if response is JSON before parsing
       const errorData = await response.json().catch(() => ({}));
       throw new Error(`API call failed with status: ${response.status}, message: ${errorData.message || response.statusText}`);
     }
@@ -168,7 +159,6 @@ export const updateBlog = async (postData: Partial<Post>) => {
 };
 
 
-// Deletes a blog post via API
 export const deleteBlog = async (blogId: string) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/deleteBlog/${blogId}`, {
@@ -187,7 +177,6 @@ export const deleteBlog = async (blogId: string) => {
   }
 };
 
-// Publishes a blog via API
 export const publishBlog = async (blogId: string, isPublished: boolean) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/publishBlog/${blogId}`, {
@@ -207,7 +196,6 @@ export const publishBlog = async (blogId: string, isPublished: boolean) => {
   }
 };
 
-// Creates a new series via API
 export const createSeries = async (seriesData: { title: string; description: string; imageUrl: string; blogsId: string[] }) => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/series/createSeries`, {
@@ -229,7 +217,6 @@ export const createSeries = async (seriesData: { title: string; description: str
   }
 };
 
-// Gets blogs by series ID via API
 export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
   try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogsBySeries/${seriesId}`, {

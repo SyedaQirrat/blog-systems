@@ -10,9 +10,47 @@ import {
   BlogData,
   Post,
 } from "@/lib/data-service";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 const CKEditorComponent = dynamic(() => import("@/components/CKEditorComponent"), {
   ssr: false,
+});
+
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  tags: z.string().optional(),
+  isPublished: z.boolean().default(false),
+  seriesId: z.string().optional().nullable(),
+  category: z.string().optional(),
+  content: z.string().optional(),
 });
 
 export default function ManagePost({ params }: { params: { params?: string[] } }) {
@@ -22,17 +60,21 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   const isCreating = postId === "new";
 
   const [data, setData] = useState<BlogData | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    description: "",
-    tags: "",
-    isPublished: true,
-    seriesId: null as string | null,
-    category: "",
-  });
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      tags: "",
+      isPublished: true,
+      seriesId: null,
+      category: "",
+      content: "",
+    },
+  });
 
   useEffect(() => {
     loadBlogData().then((blogData) => {
@@ -41,37 +83,41 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       if (isEditing && postId) {
         const post = blogData.posts.find((p: Post) => p._id === postId);
         if (post) {
-          setFormData({
+          form.reset({
             title: post.title,
-            content: post.content,
-            description: post.description,
-            tags: post.tags,
+            description: post.description ?? "",
+            tags: post.tags ?? "",
             isPublished: post.isPublished ?? false,
             seriesId: post.seriesId,
             category: post.category,
+            content: post.content,
           });
         }
       }
     });
-  }, [isEditing, postId]);
+  }, [isEditing, postId, form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!data) return;
-
     setLoading(true);
 
     try {
       if (isEditing) {
         await updateBlog({
           _id: postId!,
-          ...formData,
-           isPublished: formData.isPublished,
+          ...values,
+          description: values.description ?? "",
+          tags: values.tags ?? "",
+          content: values.content ?? "",
         });
       } else {
         const response = await createBlog({
-          ...formData,
-           isPublished: formData.isPublished,
+          title: values.title,
+          content: values.content ?? "",
+          description: values.description ?? "",
+          tags: values.tags ?? "",
+          seriesId: values.seriesId,
+          isPublished: values.isPublished,
         });
         router.push(`/post/${response.data._id}`);
         return;
@@ -84,82 +130,160 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
     }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = e.target.files ? e.target.files[0] : null;
     setFile(newFile);
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>{isCreating ? "Create New Post" : "Edit Post"}</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="Title"
-          required
-        />
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          placeholder="Description"
-        />
-        <input
-          type="text"
-          name="tags"
-          value={formData.tags}
-          onChange={handleChange}
-          placeholder="Tags (comma separated)"
-        />
-        <select
-          name="seriesId"
-          value={formData.seriesId || ""}
-          onChange={handleChange}
-        >
-          <option value="">Select Series</option>
-          {data?.series.map((s) => (
-            <option key={s._id} value={s._id}>
-              {s.title}
-            </option>
-          ))}
-        </select>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-        />
-        {file && <p>Selected file: {file.name}</p>}
+    <div className="container mx-auto max-w-4xl py-12">
+      <div className="flex items-center space-x-4 mb-8">
+        <Button onClick={() => router.back()} variant="outline" size="icon">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-3xl font-bold">
+          {isCreating ? "Create New Post" : "Edit Post"}
+        </h1>
+      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <Card className="p-6 space-y-6">
+            <CardHeader className="p-0">
+              <CardTitle className="text-xl">Post Details</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your post title here"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <CKEditorComponent
-          value={formData.content}
-          onChange={(data) => setFormData((prev) => ({ ...prev, content: data }))}
-        />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="A brief description of the post"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <label>
-          Published:
-          <input
-            type="checkbox"
-            checked={formData.isPublished}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, isPublished: e.target.checked }))
-            }
-          />
-        </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="comma, separated, tags"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Saving..." : isCreating ? "Create" : "Update"}
-        </button>
-      </form>
+                <FormField
+                  control={form.control}
+                  name="seriesId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Series</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a series" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {data?.series.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* File input for images - needs to be handled separately as it's not a standard input field for react-hook-form */}
+              <div className="space-y-2">
+                <Label htmlFor="file-input">Feature Image</Label>
+                <Input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                {file && <p className="text-sm text-muted-foreground mt-1">Selected file: {file.name}</p>}
+              </div>
+
+              {/* CKEditorComponent for content - controlled manually as it's a third-party component */}
+              <div className="space-y-2">
+                <Label>Content</Label>
+                <CKEditorComponent
+                  value={form.getValues("content") ?? ""}
+                  onChange={(editorData) => form.setValue("content", editorData)}
+                />
+              </div>
+
+              <div className="flex justify-between items-center">
+                <FormField
+                  control={form.control}
+                  name="isPublished"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Published</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Toggle to make this post public.
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : isCreating ? "Create" : "Update"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     </div>
   );
 }

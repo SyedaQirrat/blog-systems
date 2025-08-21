@@ -1,87 +1,277 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Post } from "@/lib/data-service"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import {
+  loadBlogData,
+  createBlog,
+  updateBlog,
+  BlogData,
+  Post,
+} from "@/lib/data-service";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface PostCardProps {
-  post: Post
-  getAuthorName: (authorId: string) => string
-  getCategoryName: (categoryId: string) => string
-  onCategoryClick: (category: string) => void
-  onTagClick: (tag: string) => void
-}
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
-export default function PostCard({ post, getAuthorName, getCategoryName, onCategoryClick, onTagClick }: PostCardProps) {
-  const [imageError, setImageError] = useState(false)
+const CKEditorComponent = dynamic(() => import("@/components/CKEditorComponent"), {
+  ssr: false,
+});
 
-  const handleImageError = () => {
-    setImageError(true)
-  }
+const formSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().optional(),
+  tags: z.string().optional(),
+  isPublished: z.boolean().default(false),
+  seriesId: z.string().optional().nullable(),
+  category: z.string().optional(),
+  content: z.string().optional(),
+});
 
-  const getFallbackImage = () => {
-    const colors = ["f97316", "fbbf24", "10b981", "3b82f6", "8b5cf6", "ec4899"]
-    // Using a consistent value from post._id to generate a color
-    const color = colors[post._id.charCodeAt(0) % colors.length]
-    return `https://via.placeholder.com/800x400/${color}/ffffff?text=${encodeURIComponent(post.title)}`
-  }
-  
-  const images = post.image;
-  const firstImage = images.length > 0 ? images[0] : null;
-  const tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+export default function ManagePost({ params }: { params: { params?: string[] } }) {
+  const router = useRouter();
+  const postId = params?.params?.[0];
+  const isEditing = !!postId && postId !== "all" && postId !== "new";
+  const isCreating = postId === "new";
 
-  const contentText = typeof post.content === 'string' ? 
-    post.content.substring(0, 150) : 
-    '';
+  const [data, setData] = useState<BlogData | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      tags: "",
+      isPublished: true,
+      seriesId: null,
+      category: "",
+      content: "",
+    },
+  });
+
+  useEffect(() => {
+    loadBlogData().then((blogData) => {
+      setData(blogData);
+
+      if (isEditing && postId) {
+        const post = blogData.posts.find((p: Post) => p._id === postId);
+        if (post) {
+          form.reset({
+            title: post.title,
+            description: post.description,
+            tags: post.tags,
+            isPublished: post.isPublished ?? false,
+            seriesId: post.seriesId,
+            category: post.category,
+            content: post.content,
+          });
+        }
+      }
+    });
+  }, [isEditing, postId, form]);
+
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!data) return;
+    setLoading(true);
+
+    try {
+      if (isEditing) {
+        await updateBlog({
+          _id: postId!,
+          ...values,
+          content: values.content ?? "", // Ensure content is always a string
+        });
+      } else {
+        const response = await createBlog({
+          ...values,
+          content: values.content ?? "", // Ensure content is always a string
+        });
+        router.push(`/post/${response.data._id}`);
+        return;
+      }
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to save post:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFile = e.target.files ? e.target.files[0] : null;
+    setFile(newFile);
+  };
 
   return (
-    <div className="flex-1 min-h-[400px]">
-      <div
-        className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-0 h-full flex flex-col"
-        style={{ border: "1.5px solid #E5E7EB" }}
-      >
-        {/* Header with image, overlay, and title */}
-        <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9' }}>
-          {firstImage && (
-            <Image
-              src={imageError ? getFallbackImage() : firstImage}
-              alt={post.title}
-              fill
-              className="object-cover"
-              onError={handleImageError}
-            />
-          )}
-          <div className="absolute inset-0 bg-black opacity-30"></div>
-          <div className="relative z-10 flex items-end p-4 min-h-[100px]">
-            <h2 className="text-xl font-bold tracking-wide leading-tight">
-              <Link href={`/post/${post._id}`} className="text-white hover:text-[#7ACB59] transition-colors">
-                {post.title}
-              </Link>
-            </h2>
-          </div>
-        </div>
+    <div className="container mx-auto max-w-4xl py-12">
+      <h1 className="text-3xl font-bold mb-8">
+        {isCreating ? "Create New Post" : "Edit Post"}
+      </h1>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <Card className="p-6 space-y-6">
+            <CardHeader className="p-0">
+              <CardTitle className="text-xl">Post Details</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 space-y-6">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your post title here"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        {/* Main content section */}
-        <div className="p-6 space-y-4 flex flex-col flex-grow">
-          <div className="text-sm text-gray-500">
-            Category: <button onClick={() => onCategoryClick(post.category)} className="underline font-bold text-black-600 hover:text-black transition-colors">{post.category}</button>
-          </div>
-          <div className="text-black text-sm leading-relaxed">{contentText}...</div>
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="A brief description of the post"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="pt-4 mt-auto">
-            {!post.isPublished && (
-              <span className="inline-block bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full mr-2">DRAFT</span>
-            )}
-            <Link
-              href={`/post/${post._id}`}
-              className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-black font-medium bg-white hover:bg-gray-100 transition rounded-md"
-            >
-              Read More
-            </Link>
-          </div>
-        </div>
-      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="comma, separated, tags"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="seriesId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Series</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a series" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {data?.series.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* File input for images - needs to be handled separately as it's not a standard input field for react-hook-form */}
+              <div className="space-y-2">
+                <Label htmlFor="file-input">Feature Image</Label>
+                <Input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+                {file && <p className="text-sm text-muted-foreground mt-1">Selected file: {file.name}</p>}
+              </div>
+
+              {/* CKEditorComponent for content - controlled manually as it's a third-party component */}
+              <div className="space-y-2">
+                <Label>Content</Label>
+                <CKEditorComponent
+                  value={form.getValues("content") ?? ""} // Provide a fallback for content
+                  onChange={(editorData) => form.setValue("content", editorData)}
+                />
+              </div>
+
+              <div className="flex justify-between items-center">
+                <FormField
+                  control={form.control}
+                  name="isPublished"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Published</FormLabel>
+                        <div className="text-sm text-muted-foreground">
+                          Toggle to make this post public.
+                        </div>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : isCreating ? "Create" : "Update"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     </div>
-  )
+  );
 }

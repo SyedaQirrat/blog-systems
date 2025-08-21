@@ -2,7 +2,6 @@
 
 import React from "react";
 import dynamic from "next/dynamic";
-import type { CKEditorProps } from "@ckeditor/ckeditor5-react";
 
 // Dynamically import CKEditor for SSR safety
 const CKEditor = dynamic(() => import("@ckeditor/ckeditor5-react").then(mod => mod.CKEditor), {

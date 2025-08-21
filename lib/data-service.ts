@@ -156,7 +156,8 @@ export const updateBlog = async (postData: Partial<Post>) => {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      // Check if response is JSON before parsing
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(`API call failed with status: ${response.status}, message: ${errorData.message || response.statusText}`);
     }
     return await response.json();

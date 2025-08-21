@@ -57,8 +57,11 @@ export default function BlogPage() {
           postCategoryString.includes(query)
         : true;
 
+      // Find the name of the current category from the data array
+      const currentCategoryName = data.categories.find(c => c.categoryId === currentCategory)?.name;
+
       // Finally, filter by category or tag
-      const matchesCategory = currentCategory ? postCategoryString === currentCategory.toLowerCase() : true;
+      const matchesCategory = currentCategory ? (postCategoryString === (currentCategoryName?.toLowerCase() ?? '')) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
 
       return matchesSearch && matchesCategory && matchesTag;

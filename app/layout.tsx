@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Footer } from "@/components/footer"
 import "./globals.css"
+import { GoogleAnalytics } from '@next/third-parties/google';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: "SSTRACK BLOGS",
@@ -21,6 +23,7 @@ export default function RootLayout({
         {children}
         <Footer />
       </body>
+      <GoogleAnalytics gaId="G-XYZ" />
     </html>
   )
 }

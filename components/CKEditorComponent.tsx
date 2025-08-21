@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -14,7 +14,7 @@ export default function CKEditorComponent({ value, onChange }: CKEditorComponent
     <CKEditor
       editor={ClassicEditor}
       data={value}
-      onChange={(_, editor) => onChange(editor.getData())}
+      onChange={(_: unknown, editor: any) => onChange(editor.getData())}
     />
   );
 }

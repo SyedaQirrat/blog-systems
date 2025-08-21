@@ -46,7 +46,7 @@ export default function BlogPage() {
       
       const matchesSearch = searchQuery
         ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          post.tags.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          (post.tags ?? "").toLowerCase().includes(searchQuery.toLowerCase()) || 
           post.category.toLowerCase().includes(searchQuery.toLowerCase())
         : true;
 
@@ -58,7 +58,7 @@ export default function BlogPage() {
         return post.category === currentCategory
       }
       if (currentTag) {
-        return post.tags.split(',').map(tag => tag.trim()).includes(currentTag)
+        return (post.tags ?? "").split(',').map(tag => tag.trim()).includes(currentTag)
       }
       
       return true
@@ -154,8 +154,7 @@ export default function BlogPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <PortfolioGrid
+          <PortfolioGrid
               filteredPosts={filteredPosts}
               authors={data.authors}
               categories={data.categories}
@@ -164,7 +163,6 @@ export default function BlogPage() {
               onCategoryClick={handleCategoryClick}
               onTagClick={handleTagClick}
             />
-          </div>
         )}
       </section>
     </main>

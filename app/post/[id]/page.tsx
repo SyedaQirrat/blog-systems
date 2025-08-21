@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
-import { fetchSingleBlog, deleteBlog, BlogData, Post, Series } from "@/lib/data-service"
+import { fetchSingleBlog, deleteBlog, Post } from "@/lib/data-service"
+import { Button } from "@/components/ui/button"
 
 export default function PostDetail({ params }: { params: { id: string } }) {
   const [post, setPost] = useState<Post | null>(null)
@@ -46,11 +47,14 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   }
   
   const images = post.image;
-  const tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+  // Safely split tags, providing an empty array if post.tags is not a string
+  const tagsArray = typeof post.tags === 'string'
+    ? post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
+    : [];
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+      <div className="text-white py-8 bg-[#0E4772]">
         <div className="max-w-4xl mx-auto px-6">
           <Link href="/" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
             ← Back to Blog
@@ -102,15 +106,13 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         <div className="flex justify-center gap-4 text-center">
           <Link
             href={`/manage-post/${post._id}`}
-            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
-            style={{ backgroundColor: "#7ACB59" }}
+            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg bg-[#7ACB59]"
           >
             Edit Post
           </Link>
           <button
             onClick={handleDeletePost}
-            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg"
-            style={{ backgroundColor: "#ff4d4f" }}
+            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg bg-[#ff4d4f]"
           >
             Delete Post
           </button>

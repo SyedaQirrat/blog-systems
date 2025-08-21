@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Trash, Pencil } from "lucide-react";
 
 export default function ManagePostsPage() {
@@ -51,61 +51,64 @@ export default function ManagePostsPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl py-12">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Manage All Posts</h1>
-        <Button asChild>
-          <Link href="/manage-post/new">Create New Post</Link>
-        </Button>
+    <div className="min-h-screen bg-white">
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+        <div className="max-w-6xl mx-auto px-6 flex justify-between items-center">
+          <h1 className="text-4xl md:text-6xl font-thin text-white">Manage Posts</h1>
+          <Button asChild style={{ backgroundColor: "#7ACB59" }}>
+            <Link href="/manage-post/new">Create New Post</Link>
+          </Button>
+        </div>
       </div>
-
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="text-center py-12">Loading posts...</div>
-          ) : posts.length === 0 ? (
-            <div className="text-center py-12">No posts found.</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {posts.map((post) => (
-                  <TableRow key={post._id}>
-                    <TableCell className="font-medium">{post.title}</TableCell>
-                    <TableCell>{post.category}</TableCell>
-                    <TableCell>
-                      <Badge variant={post.isPublished ? "default" : "secondary"}>
-                        {post.isPublished ? "Published" : "Draft"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="space-x-2">
-                      <Button asChild variant="outline" size="icon">
-                        <Link href={`/manage-post/${post._id}`}>
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleDelete(post._id)}
-                      >
-                        <Trash className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+      <div className="container mx-auto max-w-6xl py-12">
+        <Card>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="text-center py-12">Loading posts...</div>
+            ) : posts.length === 0 ? (
+              <div className="text-center py-12">No posts found.</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {posts.map((post) => (
+                    <TableRow key={post._id}>
+                      <TableCell className="font-medium">{post.title}</TableCell>
+                      <TableCell>{post.category}</TableCell>
+                      <TableCell>
+                        <Badge variant={post.isPublished ? "default" : "secondary"}>
+                          {post.isPublished ? "Published" : "Draft"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="space-x-2">
+                        <Button asChild variant="outline" size="icon">
+                          <Link href={`/manage-post/${post._id}`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => handleDelete(post._id)}
+                        >
+                          <Trash className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

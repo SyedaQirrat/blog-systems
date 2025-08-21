@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 import {
   Form,
@@ -136,66 +137,34 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   };
 
   return (
-    <div className="container mx-auto max-w-4xl py-12">
-      <div className="flex items-center space-x-4 mb-8">
-        <Button onClick={() => router.back()} variant="outline" size="icon">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-3xl font-bold">
-          {isCreating ? "Create New Post" : "Edit Post"}
-        </h1>
+    <div className="min-h-screen bg-white">
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+        <div className="max-w-4xl mx-auto px-6">
+          <Button onClick={() => router.back()} variant="link" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 p-0">
+            ← Back
+          </Button>
+          <h1 className="text-4xl md:text-6xl font-thin text-white">
+            {isCreating ? "Create New Post" : "Edit Post"}
+          </h1>
+        </div>
       </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <Card className="p-6 space-y-6">
-            <CardHeader className="p-0">
-              <CardTitle className="text-xl">Post Details</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Your post title here"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="A brief description of the post"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="container mx-auto max-w-4xl py-12">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            <Card className="p-6 space-y-6">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xl">Post Details</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-6">
                 <FormField
                   control={form.control}
-                  name="tags"
+                  name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tags</FormLabel>
+                      <FormLabel>Title</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="comma, separated, tags"
+                          placeholder="Your post title here"
                           {...field}
                         />
                       </FormControl>
@@ -206,84 +175,120 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
 
                 <FormField
                   control={form.control}
-                  name="seriesId"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Series</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a series" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {data?.series.map((s) => (
-                            <SelectItem key={s._id} value={s._id}>
-                              {s.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="A brief description of the post"
+                          {...field}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
 
-              {/* File input for images - needs to be handled separately as it's not a standard input field for react-hook-form */}
-              <div className="space-y-2">
-                <Label htmlFor="file-input">Feature Image</Label>
-                <Input
-                  id="file-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-                {file && <p className="text-sm text-muted-foreground mt-1">Selected file: {file.name}</p>}
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="tags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tags</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="comma, separated, tags"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              {/* CKEditorComponent for content - controlled manually as it's a third-party component */}
-              <div className="space-y-2">
-                <Label>Content</Label>
-                <CKEditorComponent
-                  value={form.getValues("content") ?? ""}
-                  onChange={(editorData) => form.setValue("content", editorData)}
-                />
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="seriesId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Series</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a series" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {data?.series.map((s) => (
+                              <SelectItem key={s._id} value={s._id}>
+                                {s.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-              <div className="flex justify-between items-center">
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel>Published</FormLabel>
-                        <div className="text-sm text-muted-foreground">
-                          Toggle to make this post public.
+                {/* File input for images - needs to be handled separately as it's not a standard input field for react-hook-form */}
+                <div className="space-y-2">
+                  <Label htmlFor="file-input">Feature Image</Label>
+                  <Input
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  {file && <p className="text-sm text-muted-foreground mt-1">Selected file: {file.name}</p>}
+                </div>
+
+                {/* CKEditorComponent for content - controlled manually as it's a third-party component */}
+                <div className="space-y-2">
+                  <Label>Content</Label>
+                  <CKEditorComponent
+                    value={form.getValues("content") ?? ""}
+                    onChange={(editorData) => form.setValue("content", editorData)}
+                  />
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <FormField
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel>Published</FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            Toggle to make this post public.
+                          </div>
                         </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : isCreating ? "Create" : "Update"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
-      </Form>
+                  <Button type="submit" disabled={loading} style={{ backgroundColor: "#7ACB59" }}>
+                    {loading ? "Saving..." : isCreating ? "Create" : "Update"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

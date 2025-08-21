@@ -7,6 +7,7 @@ import Image from "next/image"
 import React from "react"
 import { fetchSingleBlog, deleteBlog, Post } from "@/lib/data-service"
 import { Button } from "@/components/ui/button"
+import { CommentSection } from "@/components/comment-section"; // Import the new component
 
 export default function PostDetail({ params }: { params: { id: string } }) {
   const [post, setPost] = useState<Post | null>(null)
@@ -121,6 +122,9 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             Delete Post
           </button>
         </div>
+
+        {/* Integrate the CommentSection here */}
+        <CommentSection blogId={post._id} /> {/* Pass the current post's ID */}
       </div>
     </div>
   )

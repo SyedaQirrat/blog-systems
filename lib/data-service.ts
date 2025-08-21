@@ -112,11 +112,11 @@ export const createBlog = async (postData: {
     if (postData.seriesId) formData.append('seriesId', postData.seriesId);
     formData.append('isPublished', String(postData.isPublished));
     if (postData.file) formData.append('file', postData.file);
-    
+
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${AUTH_TOKEN}`,
+        'Authorization': `Bearer ${AUTH_TOKEN}`, // Do NOT set Content-Type, browser handles it
       },
       body: formData,
     });

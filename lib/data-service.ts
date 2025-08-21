@@ -116,7 +116,7 @@ export const createBlog = async (postData: {
       description: postData.description,
       tags: postData.tags,
       seriesId: postData.seriesId || null,
-      isPublished: String(postData.isPublished), // must be "true"/"false"
+      isPublished: postData.isPublished,
     };
 
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {

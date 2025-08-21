@@ -225,7 +225,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
               Create Post
             </Link>
             <Link
-              href="/manage-post/all"
+              href="/manage-posts"
               style={{
                 backgroundColor: "#7ACB59",
                 color: "white",

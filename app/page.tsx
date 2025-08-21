@@ -37,56 +37,39 @@ export default function BlogPage() {
     return category ? category.name : "Uncategorized"
   }
   
-  const filteredPosts = data.posts.filter((post) => {
-    if (!showDrafts && !post.isPublished) {
-      return false
-    }
-    
-    const matchesSearch = searchQuery
-      ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        post.tags.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        post.category.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
-
-    if (!matchesSearch) {
+  const filteredPosts = data.posts
+    .filter((post) => {
+      // Correctly handle undefined isPublished property
+      if (!showDrafts && !(post.isPublished ?? false)) {
         return false;
-    }
+      }
+      
+      const matchesSearch = searchQuery
+        ? post.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          post.tags.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          post.category.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
 
-    if (currentCategory) {
-      return post.category === currentCategory
-    }
-    if (currentTag) {
-      return post.tags.split(',').map(tag => tag.trim()).includes(currentTag)
-    }
-    
-    return true
-  })
+      if (!matchesSearch) {
+          return false;
+      }
 
-  const postsBySeriesId: { [key: string]: Post[] } = {}
-  filteredPosts.forEach(post => {
-    const seriesId = post.seriesId ?? "-1";
-    if (!postsBySeriesId[seriesId]) {
-      postsBySeriesId[seriesId] = [];
-    }
-    postsBySeriesId[seriesId].push(post);
-  });
-  
-  const renderPosts = (posts: Post[], depth: number = 0) => {
-    return posts.map(post => (
-      <React.Fragment key={post._id}>
-        <div style={{ marginLeft: `${depth * 20}px` }}>
-          <PostCard
-            post={post}
-            getAuthorName={getAuthorName}
-            getCategoryName={getCategoryName}
-            onCategoryClick={handleCategoryClick}
-            onTagClick={handleTagClick}
-          />
-        </div>
-        {postsBySeriesId[post._id] && renderPosts(postsBySeriesId[post._id], depth + 1)}
-      </React.Fragment>
-    ));
-  };
+      if (currentCategory) {
+        return post.category === currentCategory
+      }
+      if (currentTag) {
+        return post.tags.split(',').map(tag => tag.trim()).includes(currentTag)
+      }
+      
+      return true
+    })
+    // Sort posts by publishedDate to show the newest ones first
+    .sort((a, b) => {
+      if (a.publishedDate && b.publishedDate) {
+        return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+      }
+      return 0;
+    });
   
   const handleCategoryClick = (category: string) => {
     setCurrentCategory(category)
@@ -172,7 +155,15 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {renderPosts(postsBySeriesId["-1"] || [])}
+            <PortfolioGrid
+              filteredPosts={filteredPosts}
+              authors={data.authors}
+              categories={data.categories}
+              getAuthorName={getAuthorName}
+              getCategoryName={getCategoryName}
+              onCategoryClick={handleCategoryClick}
+              onTagClick={handleTagClick}
+            />
           </div>
         )}
       </section>

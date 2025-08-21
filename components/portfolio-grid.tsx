@@ -1,35 +1,16 @@
 "use client"
 
-interface Post {
-  id: number
-  title: string
-  content: string // Changed to store HTML string
-  image: string[] | string
-  authorId: string
-  categoryId: string
-  tags: string[]
-  isPublished?: boolean
-  publishedDate?: string
-  parentId?: number | null
-}
-interface Author {
-  authorId: string
-  name: string
-}
-
-interface Category {
-  categoryId: string
-  name: string
-}
+import Link from "next/link";
+import { Post, Author, Category } from "@/lib/data-service";
 
 interface PortfolioGridProps {
-  filteredPosts: Post[]
-  authors: Author[]
-  categories: Category[]
-  getAuthorName: (authorId: string) => string
-  getCategoryName: (categoryId: string) => string
-  onCategoryClick: (categoryId: string) => void
-  onTagClick: (tag: string) => void
+  filteredPosts: Post[];
+  authors: Author[];
+  categories: Category[];
+  getAuthorName: (authorId: string) => string;
+  getCategoryName: (categoryId: string) => string;
+  onCategoryClick: (category: string) => void;
+  onTagClick: (tag: string) => void;
 }
 
 export function PortfolioGrid({
@@ -47,23 +28,44 @@ export function PortfolioGrid({
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredPosts.map((post) => (
             <div
-              key={post.id}
+              key={post._id}
               className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col"
-              style={{ color: "#000" }}
             >
               <h2 className="font-bold text-lg mb-2 text-black">{post.title}</h2>
               <div className="mb-1 text-sm text-black">
-                Category: <span className="underline text-black">{getCategoryName(post.categoryId)}</span>
+                Category:{" "}
+                <button
+                  onClick={() => onCategoryClick(post.category)}
+                  className="underline text-black hover:text-gray-600"
+                >
+                  {post.category}
+                </button>
               </div>
-              <div className="mb-1 text-sm text-black">Author: {getAuthorName(post.authorId)}</div>
-              <p className="text-sm mb-4 text-black">{post.content.slice(0, 120)}...</p>
-              <button className="mt-auto px-4 py-2 border border-gray-300 rounded text-black font-medium bg-white hover:bg-gray-100 transition">
+              <div className="mb-1 text-sm text-black">Tags:</div>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {typeof post.tags === 'string'
+                  ? post.tags.split(",").map((tag, index) => (
+                      <button
+                        key={index}
+                        onClick={() => onTagClick(tag.trim())}
+                        className="text-xs px-2 py-1 bg-gray-200 rounded-full hover:bg-gray-300 transition"
+                      >
+                        {tag.trim()}
+                      </button>
+                    ))
+                  : null}
+              </div>
+              <p className="text-sm mb-4 text-black">{post.content?.slice(0, 120)}...</p>
+              <Link
+                href={`/post/${post._id}`}
+                className="mt-auto px-4 py-2 border border-gray-300 rounded text-black font-medium bg-white hover:bg-gray-100 transition"
+              >
                 Read More
-              </button>
+              </Link>
             </div>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }

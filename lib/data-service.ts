@@ -10,6 +10,7 @@ export interface Post {
   image: string[];
   category: string;
   file?: File | null;
+  allowComments?: boolean; 
 }
 
 export interface Author {
@@ -102,6 +103,7 @@ export const createBlog = async (postData: {
   isPublished: boolean;
   seriesId?: string | null;
   file?: File | null;
+  allowComments?: boolean; // <-- add this
 }) => {
   try {
     const formData = new FormData();
@@ -111,12 +113,14 @@ export const createBlog = async (postData: {
     formData.append('tags', postData.tags);
     if (postData.seriesId) formData.append('seriesId', postData.seriesId);
     formData.append('isPublished', String(postData.isPublished));
+
     if (postData.file) formData.append('file', postData.file);
+    if (postData.allowComments !== undefined) formData.append('allowComments', String(postData.allowComments)); // <-- append to FormData
 
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${AUTH_TOKEN}`, // Do NOT set Content-Type, browser handles it
+        'Authorization': `Bearer ${AUTH_TOKEN}`, // DO NOT set Content-Type; browser handles FormData
       },
       body: formData,
     });

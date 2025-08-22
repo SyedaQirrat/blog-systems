@@ -49,6 +49,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   tags: z.string().optional(),
   isPublished: z.boolean().default(false),
+  allowComments: z.boolean().default(true), // New schema field
   seriesId: z.string().optional().nullable(),
   category: z.string().optional(),
   content: z.string().optional(),
@@ -71,6 +72,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
       description: "",
       tags: "",
       isPublished: true,
+      allowComments: true, // Set a default value
       seriesId: null,
       category: "",
       content: "",
@@ -89,6 +91,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
             description: post.description ?? "",
             tags: post.tags ?? "",
             isPublished: post.isPublished ?? false,
+            allowComments: post.allowComments ?? true, // Load existing value
             seriesId: post.seriesId,
             category: post.category,
             content: post.content,
@@ -119,6 +122,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
           tags: values.tags ?? "",
           seriesId: values.seriesId,
           isPublished: values.isPublished,
+          allowComments: values.allowComments, // Pass new value
           file: file,
         });
         router.push("/");
@@ -217,7 +221,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                         <FormLabel>Series</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value ?? "none"}
+                          value={field.value ?? ""}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -298,6 +302,28 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                           <FormLabel>Published</FormLabel>
                           <div className="text-sm text-muted-foreground">
                             Toggle to make this post public.
+                          </div>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* New FormField for allowComments */}
+                  <FormField
+                    control={form.control}
+                    name="allowComments"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
+                        <div className="space-y-0.5">
+                          <FormLabel>Allow Comments</FormLabel>
+                          <div className="text-sm text-muted-foreground">
+                            Toggle to allow readers to comment on this post.
                           </div>
                         </div>
                         <FormControl>

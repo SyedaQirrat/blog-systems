@@ -196,26 +196,42 @@ export const publishBlog = async (blogId: string, isPublished: boolean) => {
   }
 };
 
-export const createSeries = async (seriesData: { title: string; description: string; imageUrl: string; blogsId: string[] }) => {
+export const createSeries = async (seriesData: {
+  title: string;
+  description: string;
+  file?: File | null;
+  imageUrl?: string;
+  blogsId: string[];
+}) => {
   try {
+    const formData = new FormData();
+    formData.append('title', seriesData.title);
+    formData.append('description', seriesData.description);
+    // Remove imageUrl from FormData to match API
+    if (seriesData.file) {
+      formData.append('file', seriesData.file);
+    }
+    
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/series/createSeries`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${AUTH_TOKEN}`,
       },
-      body: JSON.stringify(seriesData),
+      body: formData,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Failed to create series: ${response.statusText}, message: ${errorData.message || response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to create series: ${response.statusText}, message: ${errorText}`);
     }
+
     return await response.json();
   } catch (error) {
     console.error("Error creating series via API:", error);
     throw error;
   }
 };
+
 
 export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
   try {

@@ -22,24 +22,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 
+// Update Zod schema to make description required
 const formSchema = z.object({
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
+  description: z.string().min(1, {
+    message: "Description is required.",
+  }),
 });
 
 export default function CreateSeriesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      imageUrl: "",
     },
   });
 
@@ -49,9 +51,9 @@ export default function CreateSeriesPage() {
     try {
       await createSeries({
         title: values.title,
-        description: values.description ?? "",
-        imageUrl: values.imageUrl ?? "",
-        blogsId: [],
+        description: values.description,
+        file: file,
+        blogsId: [], // The API will handle this, but we need to provide it
       });
       router.push("/");
     } catch (error) {
@@ -59,6 +61,11 @@ export default function CreateSeriesPage() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFile = e.target.files ? e.target.files[0] : null;
+    setFile(newFile);
   };
 
   return (
@@ -113,22 +120,19 @@ export default function CreateSeriesPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://example.com/image.jpg"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
+                {/* File input for images - handled separately from react-hook-form */}
+                <div className="space-y-2">
+                  <Label htmlFor="file-input">Feature Image</Label>
+                  <Input
+                    id="file-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  {file && <p className="text-sm text-muted-foreground mt-1">Selected file: {file.name}</p>}
+                </div>
+                
                 <Button type="submit" disabled={loading} style={{ backgroundColor: "#7ACB59" }}>
                   {loading ? "Creating..." : "Create Series"}
                 </Button>

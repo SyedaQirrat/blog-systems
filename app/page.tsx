@@ -19,7 +19,7 @@ export default function BlogPage() {
   const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] })
   const [currentCategory, setCurrentCategory] = useState<string>("")
   const [currentTag, setCurrentTag] = useState<string>("")
-  const [currentSeries, setCurrentSeries] = useState<string>(""); // New state for series filter
+  const [currentSeries, setCurrentSeries] = useState<string>("");
   const [loading, setLoading] = useState(true)
   const [showDrafts, setShowDrafts] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -48,32 +48,27 @@ export default function BlogPage() {
   
   const filteredPosts = data.posts
     .filter((post) => {
-      // First, filter by draft status
       if (!showDrafts && !(post.isPublished ?? false)) {
         return false;
       }
-
-      // Prepare a lowercase query and string versions of post data for robust searching
+      
       const query = searchQuery.toLowerCase();
       const postTitleString = post.title?.toLowerCase() ?? '';
       const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
       const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
       
-      // Then, filter by search query
       const matchesSearch = searchQuery
         ? postTitleString.includes(query) || 
           postTagsString.includes(query) || 
           postCategoryString.includes(query)
         : true;
 
-      // Finally, filter by category, tag, or series
       const matchesCategory = currentCategory ? (postCategoryString === (currentCategory.toLowerCase() ?? '')) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
       const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
       return matchesSearch && matchesCategory && matchesTag && matchesSeries;
     })
-    // Sort posts by publishedDate to show the newest ones first
     .sort((a, b) => {
       if (a.publishedDate && b.publishedDate) {
         return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
@@ -85,28 +80,28 @@ export default function BlogPage() {
     setCurrentCategory(category)
     setCurrentTag("")
     setSearchQuery("")
-    setCurrentSeries(""); // Reset series filter
+    setCurrentSeries("");
   }
 
   const handleTagClick = (tag: string) => {
     setCurrentTag(tag)
     setCurrentCategory("")
     setSearchQuery("")
-    setCurrentSeries(""); // Reset series filter
+    setCurrentSeries("");
   }
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentCategory("");
     setCurrentTag("");
-    setCurrentSeries(""); // Reset series filter
+    setCurrentSeries("");
   }
 
   const clearFilters = () => {
     setCurrentCategory("")
     setCurrentTag("")
     setSearchQuery("")
-    setCurrentSeries(""); // Reset series filter
+    setCurrentSeries("");
   }
 
   return (
@@ -174,7 +169,6 @@ export default function BlogPage() {
                 <SelectValue placeholder="Filter by Series" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Series</SelectItem>
                 {data.series.map((series) => (
                   <SelectItem key={series._id} value={series._id}>
                     {series.title}

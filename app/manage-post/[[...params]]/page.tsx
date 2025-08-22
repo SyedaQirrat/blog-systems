@@ -217,7 +217,7 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
                         <FormLabel>Series</FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value ?? ""}
+                          value={field.value ?? "none"}
                         >
                           <FormControl>
                             <SelectTrigger>

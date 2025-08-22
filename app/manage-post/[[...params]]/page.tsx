@@ -99,38 +99,38 @@ export default function ManagePost({ params }: { params: { params?: string[] } }
   }, [isEditing, postId, form]);
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-  if (!data) return;
-  setLoading(true);
+    if (!data) return;
+    setLoading(true);
 
-  try {
-    if (isEditing) {
-      // Update blog (no file upload in update for now)
-      await updateBlog({
-        _id: postId!,
-        ...values,
-        description: values.description ?? "",
-        tags: values.tags ?? "",
-        content: values.content ?? "",
-      });
-    } else {
-      // Create blog with FormData
-      await createBlog({
-        title: values.title,
-        content: values.content ?? "",
-        description: values.description ?? "",
-        tags: values.tags ?? "",
-        seriesId: values.seriesId,
-        isPublished: values.isPublished,
-        file: file ?? null, // Attach file here
-      });
+    try {
+      if (isEditing) {
+        await updateBlog({
+          _id: postId!,
+          ...values,
+          description: values.description ?? "",
+          tags: values.tags ?? "",
+          content: values.content ?? "",
+        });
+      } else {
+        await createBlog({
+          title: values.title,
+          content: values.content ?? "",
+          description: values.description ?? "",
+          tags: values.tags ?? "",
+          seriesId: values.seriesId,
+          isPublished: values.isPublished,
+          file: file,
+        });
+        router.push("/");
+        return;
+      }
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to save post:", error);
+    } finally {
+      setLoading(false);
     }
-    router.push("/");
-  } catch (error) {
-    console.error("Failed to save post:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFile = e.target.files ? e.target.files[0] : null;

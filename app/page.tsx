@@ -6,11 +6,20 @@ import PostCard from '@/components/post-card'
 import { PortfolioGrid } from '@/components/portfolio-grid'
 import React from "react"
 import { loadBlogData, BlogData, Post } from "@/lib/data-service"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function BlogPage() {
   const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] })
   const [currentCategory, setCurrentCategory] = useState<string>("")
   const [currentTag, setCurrentTag] = useState<string>("")
+  const [currentSeries, setCurrentSeries] = useState<string>(""); // New state for series filter
   const [loading, setLoading] = useState(true)
   const [showDrafts, setShowDrafts] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -57,14 +66,12 @@ export default function BlogPage() {
           postCategoryString.includes(query)
         : true;
 
-      // Find the name of the current category from the data array
-      const currentCategoryName = data.categories.find(c => c.categoryId === currentCategory)?.name;
-
-      // Finally, filter by category or tag
-      const matchesCategory = currentCategory ? (postCategoryString === (currentCategoryName?.toLowerCase() ?? '')) : true;
+      // Finally, filter by category, tag, or series
+      const matchesCategory = currentCategory ? (postCategoryString === (currentCategory.toLowerCase() ?? '')) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
+      const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
-      return matchesSearch && matchesCategory && matchesTag;
+      return matchesSearch && matchesCategory && matchesTag && matchesSeries;
     })
     // Sort posts by publishedDate to show the newest ones first
     .sort((a, b) => {
@@ -78,24 +85,28 @@ export default function BlogPage() {
     setCurrentCategory(category)
     setCurrentTag("")
     setSearchQuery("")
+    setCurrentSeries(""); // Reset series filter
   }
 
   const handleTagClick = (tag: string) => {
     setCurrentTag(tag)
     setCurrentCategory("")
     setSearchQuery("")
+    setCurrentSeries(""); // Reset series filter
   }
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
     setCurrentCategory("");
     setCurrentTag("");
+    setCurrentSeries(""); // Reset series filter
   }
 
   const clearFilters = () => {
     setCurrentCategory("")
     setCurrentTag("")
     setSearchQuery("")
+    setCurrentSeries(""); // Reset series filter
   }
 
   return (
@@ -143,6 +154,34 @@ export default function BlogPage() {
                   </button>
                 </>
               )}
+          </div>
+        </div>
+        
+        {/* New filter for series */}
+        <div className="flex justify-center mb-8">
+          <div className="w-full md:max-w-md">
+            <Label htmlFor="series-filter" className="sr-only">Filter by series</Label>
+            <Select
+              onValueChange={(value) => {
+                setCurrentSeries(value);
+                setCurrentCategory("");
+                setCurrentTag("");
+                setSearchQuery("");
+              }}
+              value={currentSeries}
+            >
+              <SelectTrigger id="series-filter">
+                <SelectValue placeholder="Filter by Series" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Series</SelectItem>
+                {data.series.map((series) => (
+                  <SelectItem key={series._id} value={series._id}>
+                    {series.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

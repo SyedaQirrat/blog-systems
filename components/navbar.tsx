@@ -13,7 +13,7 @@ interface NavbarProps {
   categories: Category[]
   currentCategory: string
   currentTag: string
-  onCategoryClick: (categoryId: string) => void
+  onCategoryClick: (category: string) => void
   onClearFilters: () => void
 }
 
@@ -266,10 +266,10 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
             {categories.map((category) => (
               <button
                 key={category.categoryId}
-                onClick={() => onCategoryClick(category.categoryId)}
+                onClick={() => onCategoryClick(category.name)}
                 style={{
-                  backgroundColor: currentCategory === category.categoryId ? "#7ACB59" : "transparent",
-                  color: currentCategory === category.categoryId ? "white" : "#7ACB59",
+                  backgroundColor: currentCategory === category.name ? "#7ACB59" : "transparent",
+                  color: currentCategory === category.name ? "white" : "#7ACB59",
                   border: `2px solid #7ACB59`,
                 }}
                 className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer`}

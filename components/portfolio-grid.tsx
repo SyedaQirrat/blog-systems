@@ -1,11 +1,12 @@
 "use client"
 
-import Link from "next/link";
-import { Post } from "@/lib/data-service";
+import { Post, Author, Category } from "@/lib/data-service";
 import PostCard from "./post-card";
 
 interface PortfolioGridProps {
   filteredPosts: Post[];
+  authors: Author[];
+  categories: Category[];
   getAuthorName: (authorId: string) => string;
   getCategoryName: (categoryId: string) => string;
   onCategoryClick: (category: string) => void;
@@ -14,6 +15,8 @@ interface PortfolioGridProps {
 
 export function PortfolioGrid({
   filteredPosts,
+  authors,
+  categories,
   getAuthorName,
   getCategoryName,
   onCategoryClick,

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
-import { fetchSingleBlog, deleteBlog, Post, loadBlogData } from "@/lib/data-service"
+import { fetchSingleBlog, deleteBlogs, Post, loadBlogData } from "@/lib/data-service"
 import { Button } from "@/components/ui/button"
 import { CommentSection } from "@/components/comment-section";
 import PostCard from "@/components/post-card"
@@ -49,7 +49,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
     if (confirm("Are you sure you want to delete this post?")) {
       if (post) {
         try {
-          await deleteBlog(post._id);
+          await deleteBlogs(post._id);
           router.push("/");
         } catch (error) {
           console.error("Failed to delete post:", error);

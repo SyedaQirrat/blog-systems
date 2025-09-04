@@ -40,7 +40,7 @@ export interface BlogData {
 
 const BASE_URL = 'https://myuniversallanguages.com:9093';
 // Corrected AUTH_TOKEN with standard "I"
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzlhMmRhOWFjOGQ5ZDY4MGNmMjhmZWUiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoibmFnaW5hQGk4aXMuY29tIiwibmFtZSI6Ik5hZ2luYSBBZnphbCIsInVzZXJUeXBlIjoiYWRtaW4iLCJjb21wYW55IjoiaThpcy5jb20iLCJ0aW1lem9uZU9mZnNldCI6NSwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwiaXNTcGxhc2hTY3JlZW4iOnRydWUsImlhdCI6MTc1NTYwNjE4MSwiZXhwIjoxNzg3MTQyMTgxfQ.9sMx2WqXzeG3p26CT2SWw6LzxZez3hJUxiY5o21mmtA';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGFjOGNjYTVjNDlmMjM5ODJkZjAyY2EiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoic3llZGFxaXJyYXRmYXRpbWFAZ21haWwuY29tIiwibmFtZSI6IlN5ZWRhIFFpcnJhdCBGYXRpbWEgWmFpZGkiLCJ1c2VyVHlwZSI6ImFkbWluIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwicGFzc3dvcmQiOiIkMmEkMTIkUC5LUWlPdHNrZEYwSlNQMFVuRWZZdWVuemIuNW5rVGlEd3JET1l2NnhsclYySUd2N2RLdy4iLCJpczJGQUVuYWJsZWQiOmZhbHNlLCJpYXQiOjE3NTY5ODU3NjUsImV4cCI6MTc1NzAxNDU2NX0.Hr3wQzvOihT4eUIuMfj2Yl664_KHs4jw5TrDAZiskM8';
 
 const API_HEADERS = {
   'Authorization': `Bearer ${AUTH_TOKEN}`,
@@ -175,9 +175,9 @@ export const updateBlog = async (postData: Partial<Post>) => {
   }
 };
 
-export const deleteBlog = async (blogId: string) => {
+export const deleteBlogs = async (blogId: string) => {
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/deleteBlog/${blogId}`, {
+    const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/deleteBlogs/${blogId}`, {
       method: 'DELETE',
       headers: API_HEADERS,
     });

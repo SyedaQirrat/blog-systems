@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loadBlogData, Post, deleteBlog } from "@/lib/data-service";
+import { loadBlogData, Post, deleteBlogs } from "@/lib/data-service";
 import {
   Table,
   TableBody,
@@ -41,7 +41,7 @@ export default function ManagePostsPage() {
   const handleDelete = async (postId: string) => {
     if (window.confirm("Are you sure you want to delete this post?")) {
       try {
-        await deleteBlog(postId);
+        await deleteBlogs(postId);
         fetchPosts(); // Refresh the list after deletion
       } catch (error) {
         console.error("Failed to delete post:", error);

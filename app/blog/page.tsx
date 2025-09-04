@@ -1,205 +1,264 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Navbar } from "@/components/navbar"
-import { PortfolioGrid } from '@/components/portfolio-grid'
-import React from "react"
-import { loadBlogData, BlogData, Post } from "@/lib/data-service"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import * as React from "react"
+import useEmblaCarousel, {
+  type UseEmblaCarouselType,
+} from "embla-carousel-react"
+import { ArrowLeft, ArrowRight } from "lucide-react"
 
-export default function BlogPage() {
-  const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] })
-  const [currentCategory, setCurrentCategory] = useState<string>("")
-  const [currentTag, setCurrentTag] = useState<string>("")
-  const [currentSeries, setCurrentSeries] = useState<string>("");
-  const [loading, setLoading] = useState(true)
-  const [showDrafts, setShowDrafts] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 
-  useEffect(() => {
-    loadBlogData()
-      .then((blogData: BlogData) => {
-        setData(blogData)
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error("Error loading blog data:", error)
-        setLoading(false)
-      })
-  }, [])
+type CarouselApi = UseEmblaCarouselType[1]
+type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
+type CarouselOptions = UseCarouselParameters[0]
+type CarouselPlugin = UseCarouselParameters[1]
 
-  const getAuthorName = (authorId: string) => {
-    const author = data.authors.find((a) => a.authorId === authorId)
-    return author ? author.name : "Unknown Author"
+type CarouselProps = {
+  opts?: CarouselOptions
+  plugins?: CarouselPlugin
+  orientation?: "horizontal" | "vertical"
+  setApi?: (api: CarouselApi) => void
+}
+
+type CarouselContextProps = {
+  carouselRef: ReturnType<typeof useEmblaCarousel>[0]
+  api: ReturnType<typeof useEmblaCarousel>[1]
+  opts: CarouselOptions
+  orientation: "horizontal" | "vertical"
+  scrollPrev: () => void
+  scrollNext: () => void
+  canScrollPrev: boolean
+  canScrollNext: boolean
+} & CarouselProps
+
+const CarouselContext = React.createContext<CarouselContextProps | null>(null)
+
+export const useCarousel = () => {
+  const context = React.useContext(CarouselContext)
+
+  if (!context) {
+    throw new Error("useCarousel must be used within a <Carousel />")
   }
 
-  const getCategoryName = (categoryId: string) => {
-    const category = data.categories.find((c) => c.categoryId === categoryId)
-    return category ? category.name : "Uncategorized"
-  }
-  
-  const filteredPosts = data.posts
-    .filter((post) => {
-      if (!showDrafts && !(post.isPublished ?? false)) {
-        return false;
+  return context
+}
+
+const Carousel = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & CarouselProps
+>(
+  (
+    {
+      orientation = "horizontal",
+      opts,
+      setApi,
+      plugins,
+      className,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const [carouselRef, api] = useEmblaCarousel(
+      {
+        ...opts,
+        axis: orientation === "horizontal" ? "x" : "y",
+      },
+      plugins
+    )
+    const [canScrollPrev, setCanScrollPrev] = React.useState(false)
+    const [canScrollNext, setCanScrollNext] = React.useState(false)
+
+    const onSelect = React.useCallback((api: CarouselApi) => {
+      if (!api) {
+        return
       }
-      
-      const query = searchQuery.toLowerCase();
-      const postTitleString = post.title?.toLowerCase() ?? '';
-      const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
-      const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
-      
-      const matchesSearch = searchQuery
-        ? postTitleString.includes(query) || 
-          postTagsString.includes(query) || 
-          postCategoryString.includes(query)
-        : true;
 
-      const matchesCategory = currentCategory ? (postCategoryString === (currentCategory.toLowerCase() ?? '')) : true;
-      const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
-      const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
+      setCanScrollPrev(api.canScrollPrev())
+      setCanScrollNext(api.canScrollNext())
+    }, [])
 
-      return matchesSearch && matchesCategory && matchesTag && matchesSeries;
-    })
-    .sort((a, b) => {
-      if (a.publishedDate && b.publishedDate) {
-        return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+    const scrollPrev = React.useCallback(() => {
+      api?.scrollPrev()
+    }, [api])
+
+    const scrollNext = React. useCallback(() => {
+      api?.scrollNext()
+    }, [api])
+
+    const handleKeyDown = React.useCallback(
+      (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault()
+          scrollPrev()
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault()
+          scrollNext()
+        }
+      },
+      [scrollPrev, scrollNext]
+    )
+
+    React.useEffect(() => {
+      if (!api || !setApi) {
+        return
       }
-      return 0;
-    });
-  
-  const handleCategoryClick = (category: string) => {
-    setCurrentCategory(category)
-    setCurrentTag("")
-    setSearchQuery("")
-    setCurrentSeries("");
-  }
 
-  const handleTagClick = (tag: string) => {
-    setCurrentTag(tag)
-    setCurrentCategory("")
-    setSearchQuery("")
-    setCurrentSeries("");
-  }
+      setApi(api)
+    }, [api, setApi])
 
-  const handleSearchChange = (query: string) => {
-    setSearchQuery(query);
-    setCurrentCategory("");
-    setCurrentTag("");
-    setCurrentSeries("");
-  }
+    React.useEffect(() => {
+      if (!api) {
+        return
+      }
 
-  const clearFilters = () => {
-    setCurrentCategory("")
-    setCurrentTag("")
-    setSearchQuery("")
-    setCurrentSeries("");
+      onSelect(api)
+      api.on("reInit", onSelect)
+      api.on("select", onSelect)
+
+      return () => {
+        api?.off("select", onSelect)
+      }
+    }, [api, onSelect])
+
+    return (
+      <CarouselContext.Provider
+        value={{
+          carouselRef,
+          api: api,
+          opts,
+          orientation:
+            orientation || (opts?.axis === "y" ? "vertical" : "horizontal"),
+          scrollPrev,
+          scrollNext,
+          canScrollPrev,
+          canScrollNext,
+        }}
+      >
+        <div
+          ref={ref}
+          onKeyDownCapture={handleKeyDown}
+          className={cn("relative", className)}
+          role="region"
+          aria-roledescription="carousel"
+          {...props}
+        >
+          {children}
+        </div>
+      </CarouselContext.Provider>
+    )
   }
+)
+Carousel.displayName = "Carousel"
+
+const CarouselContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  const { carouselRef, orientation } = useCarousel()
 
   return (
-    <main className="min-h-screen bg-white">
-      <Navbar
-        categories={data.categories}
-        currentCategory={currentCategory}
-        currentTag={currentTag}
-        onCategoryClick={handleCategoryClick}
-        onClearFilters={clearFilters}
-      />
-      
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        <div className="flex flex-wrap items-center justify-between mb-8">
-          <div className="flex items-center gap-2 order-1 md:order-1">
-            <input
-              type="checkbox"
-              id="showDrafts"
-              checked={showDrafts}
-              onChange={(e) => setShowDrafts(e.target.checked)}
-            />
-            <label htmlFor="showDrafts" className="text-sm text-gray-600">
-              Show Drafts
-            </label>
-          </div>
-          
-          <div className="w-full md:flex-grow md:flex md:justify-center order-3 md:order-2 mt-4 md:mt-0">
-            <input
-                type="text"
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full md:max-w-md px-4 py-2 text-sm rounded-full text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
-            />
-          </div>
-            
-          <div className="flex items-center gap-4 order-2 md:order-3 w-full md:w-auto md:justify-end">
-              {(currentCategory || currentTag) && (
-                <>
-                  <span className="text-sm text-gray-600">
-                    {currentCategory ? `Category: ${currentCategory}` : `Tag: ${currentTag}`}
-                  </span>
-                  <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
-                    Clear filter
-                  </button>
-                </>
-              )}
-          </div>
-        </div>
-        
-        {/* New filter for series */}
-        <div className="flex justify-center mb-8">
-          <div className="w-full md:max-w-md">
-            <Label htmlFor="series-filter" className="sr-only">Filter by series</Label>
-            <Select
-              onValueChange={(value) => {
-                setCurrentSeries(value);
-                setCurrentCategory("");
-                setCurrentTag("");
-                setSearchQuery("");
-              }}
-              value={currentSeries}
-            >
-              <SelectTrigger id="series-filter">
-                <SelectValue placeholder="Filter by Series" />
-              </SelectTrigger>
-              <SelectContent>
-                {data.series.map((series) => (
-                  <SelectItem key={series._id} value={series._id}>
-                    {series.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500">Loading posts...</div>
-          </div>
-        ) : filteredPosts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500">
-              {currentCategory || currentTag || searchQuery ? "No posts found for this filter." : "No posts available."}
-            </div>
-          </div>
-        ) : (
-          <PortfolioGrid
-              filteredPosts={filteredPosts}
-              authors={data.authors}
-              categories={data.categories}
-              getAuthorName={getAuthorName}
-              getCategoryName={getCategoryName}
-              onCategoryClick={handleCategoryClick}
-              onTagClick={handleTagClick}
-            />
+    <div ref={carouselRef} className="overflow-hidden">
+      <div
+        ref={ref}
+        className={cn(
+          "flex",
+          orientation === "horizontal" ? "-ml-4" : "-mt-4 flex-col",
+          className
         )}
-      </section>
-    </main>
+        {...props}
+      />
+    </div>
   )
+})
+CarouselContent.displayName = "CarouselContent"
+
+const CarouselItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  const { orientation } = useCarousel()
+
+  return (
+    <div
+      ref={ref}
+      role="group"
+      aria-roledescription="slide"
+      className={cn(
+        "min-w-0 shrink-0 grow-0 basis-full",
+        orientation === "horizontal" ? "pl-4" : "pt-4",
+        className
+      )}
+      {...props}
+    />
+  )
+})
+CarouselItem.displayName = "CarouselItem"
+
+const CarouselPrevious = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<typeof Button>
+>(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+  const { orientation, scrollPrev, canScrollPrev } = useCarousel()
+
+  return (
+    <Button
+      ref={ref}
+      variant={variant}
+      size={size}
+      className={cn(
+        "absolute  h-8 w-8 rounded-full",
+        orientation === "horizontal"
+          ? "-left-12 top-1/2 -translate-y-1/2"
+          : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
+        className
+      )}
+      disabled={!canScrollPrev}
+      onClick={scrollPrev}
+      {...props}
+    >
+      <ArrowLeft className="h-4 w-4" />
+      <span className="sr-only">Previous slide</span>
+    </Button>
+  )
+})
+CarouselPrevious.displayName = "CarouselPrevious"
+
+const CarouselNext = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<typeof Button>
+>(({ className, variant = "outline", size = "icon", ...props }, ref) => {
+  const { orientation, scrollNext, canScrollNext } = useCarousel()
+
+  return (
+    <Button
+      ref={ref}
+      variant={variant}
+      size={size}
+      className={cn(
+        "absolute h-8 w-8 rounded-full",
+        orientation === "horizontal"
+          ? "-right-12 top-1/2 -translate-y-1/2"
+          : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
+        className
+      )}
+      disabled={!canScrollNext}
+      onClick={scrollNext}
+      {...props}
+    >
+      <ArrowRight className="h-4 w-4" />
+      <span className="sr-only">Next slide</span>
+    </Button>
+  )
+})
+CarouselNext.displayName = "CarouselNext"
+
+export {
+  type CarouselApi,
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
 }

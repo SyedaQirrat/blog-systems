@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
-import { fetchSingleBlog, deleteBlogs, Post, loadBlogData } from "@/lib/data-service"
+import { fetchSingleBlog, deleteblogs, Post, loadBlogData } from "@/lib/data-service"
 import { Button } from "@/components/ui/button"
 import { CommentSection } from "@/components/comment-section";
 import PostCard from "@/components/post-card"
@@ -49,7 +49,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
     if (confirm("Are you sure you want to delete this post?")) {
       if (post) {
         try {
-          await deleteBlogs(post._id);
+          await deleteblogs(post._id);
           router.push("/");
         } catch (error) {
           console.error("Failed to delete post:", error);
@@ -70,6 +70,9 @@ export default function PostDetail({ params }: { params: { id: string } }) {
   const tagsArray = typeof post.tags === 'string'
     ? post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
     : [];
+  
+  const getAuthorName = () => "Admin"; // Placeholder
+  const getCategoryName = () => post.category; // Placeholder
 
   return (
     <div className="min-h-screen bg-white">
@@ -109,9 +112,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        <div className="prose prose-lg max-w-none mb-12">
-          <div dangerouslySetInnerHTML={{ __html: post.content }} />
-        </div>
+        <div className="prose prose-lg max-w-none mb-12" dangerouslySetInnerHTML={{ __html: post.content }} />
         
         <div className="flex flex-wrap gap-2 mb-12">
           {tagsArray.map((tag, index) => (
@@ -150,8 +151,8 @@ export default function PostDetail({ params }: { params: { id: string } }) {
                 <PostCard
                   key={relatedPost._id}
                   post={relatedPost}
-                  getAuthorName={() => "Author"} 
-                  getCategoryName={() => "Category"}
+                  getAuthorName={getAuthorName}
+                  getCategoryName={getCategoryName}
                   onCategoryClick={() => {}}
                   onTagClick={() => {}}
                 />

@@ -11,11 +11,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
 
-// A new simple card for displaying series
 const SeriesCard = ({ series }: { series: Series }) => (
   <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-4 border border-gray-200 h-full flex flex-col">
     <h3 className="text-lg font-bold text-black mb-2">{series.title}</h3>
@@ -39,6 +36,10 @@ export default function LandingPage() {
     router.push(`/blog?category=${category}`);
   };
 
+  const handleTagClick = (tag: string) => {
+    router.push(`/blog?tag=${tag}`);
+  };
+  
   const clearFilters = () => {
     router.push('/blog');
   }
@@ -72,18 +73,16 @@ export default function LandingPage() {
               <Link href="/blog">View All</Link>
             </Button>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent>
-              {data.series.slice(0, 5).map((series) => (
-                <CarouselItem key={series._id} className="md:basis-1/2 lg:basis-1/4">
+              {data.series.slice(0, 8).map((series) => (
+                <CarouselItem key={series._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <div className="p-1 h-full">
                     <SeriesCard series={series} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
 
@@ -95,18 +94,16 @@ export default function LandingPage() {
               <Link href="/blog">View All</Link>
             </Button>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent>
               {latestPosts.map(post => (
-                <CarouselItem key={post._id} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={() => {}} onTagClick={() => {}} />
+                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
 
@@ -118,18 +115,16 @@ export default function LandingPage() {
               <Link href="/blog?category=Technology">View All</Link>
             </Button>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent>
               {technologyPosts.map(post => (
-                <CarouselItem key={post._id} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                   <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={() => {}} onTagClick={() => {}} />
+                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
 
@@ -141,18 +136,16 @@ export default function LandingPage() {
               <Link href="/blog?category=Productivity">View All</Link>
             </Button>
           </div>
-          <Carousel opts={{ align: "start", loop: true }} className="w-full">
+           <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
             <CarouselContent>
               {productivityPosts.map(post => (
-                <CarouselItem key={post._id} className="md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
                  <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={() => {}} onTagClick={() => {}} />
+                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
           </Carousel>
         </div>
       </section>

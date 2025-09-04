@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Navbar } from "@/components/navbar"
 import { PortfolioGrid } from '@/components/portfolio-grid'
 import React from "react"
-import { loadBlogData, BlogData } from "@/lib/data-service"
+import { loadBlogData, BlogData, Post } from "@/lib/data-service"
 import {
   Select,
   SelectContent,

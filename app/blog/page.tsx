@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import BlogPageClient from './blogPageClient'; // Ensure this matches the new filename exactly
+import BlogPageClient from './BlogPageClient';
 
 export default function BlogPage() {
   return (

@@ -102,7 +102,9 @@ export default function ManagePostsPage() {
                       <TableCell>{getSeriesTitle(post.seriesId)}</TableCell>
                       <TableCell>{getAuthorName(post.authorId)}</TableCell>
                       <TableCell>
-                        {post.publishedDate ? new Date(post.publishedDate).toLocaleDateString() : "Not Published"}
+                        {post.publishedDate
+                          ? new Date(post.publishedDate).toLocaleDateString()
+                          : "Not Published"}
                       </TableCell>
                       <TableCell>
                         <Badge variant={post.isPublished ? "default" : "secondary"}>

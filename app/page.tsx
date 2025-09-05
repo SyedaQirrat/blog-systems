@@ -47,9 +47,13 @@ export default function LandingPage() {
   const getAuthorName = (authorId: string) => data.authors.find(a => a.authorId === authorId)?.name || 'Unknown';
   const getCategoryName = (categoryId: string) => data.categories.find(c => c.categoryId === categoryId)?.name || 'Uncategorized';
 
-  const latestPosts = data.posts.slice(0, 10);
-  const technologyPosts = data.posts.filter(p => p.category === 'Technology').slice(0, 8);
-  const productivityPosts = data.posts.filter(p => p.category === 'Productivity').slice(0, 8);
+  // Filter for only published posts first
+  const publishedPosts = data.posts.filter(post => post.isPublished);
+
+  // Use the filtered list to create the sections
+  const latestPosts = publishedPosts.slice(0, 10);
+  const technologyPosts = publishedPosts.filter(p => p.category === 'Technology').slice(0, 8);
+  const productivityPosts = publishedPosts.filter(p => p.category === 'Productivity').slice(0, 8);
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>;

@@ -1,132 +1,279 @@
 "use client"
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loadBlogData, deleteBlog, Post, Series, Author } from "@/lib/data-service";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { loadBlogData, createBlog, updateBlog, fetchSingleBlog, Post, Category, Series } from "@/lib/data-service";
+import CKEditorComponent from "@/components/CKEditorComponent";
 
-export default function ManagePostsPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [series, setSeries] = useState<Series[]>([]);
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [loading, setLoading] = useState(true);
+const formSchema = z.object({
+  title: z.string().min(5, { message: "Title must be at least 5 characters." }),
+  description: z.string().min(10, { message: "Description must be at least 10 characters." }),
+  tags: z.string().optional(),
+  isPublished: z.boolean().default(false),
+  allowComments: z.boolean().default(true),
+  seriesId: z.string().optional().nullable(),
+  category: z.string({ required_error: "Please select a category." }).min(1, { message: "Please select a category." }),
+  content: z.string().min(20, { message: "Content must be at least 20 characters." }),
+});
+
+export default function ManagePostPage({ params }: { params: { params?: string[] } }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [series, setSeries] = useState<Series[]>([]);
+  
+  const postId = params.params?.[0] && params.params[0] !== "new" ? params.params[0] : null;
+  const isEditMode = !!postId;
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      tags: "",
+      isPublished: false,
+      allowComments: true,
+      seriesId: null,
+      category: "",
+      content: "",
+    },
+  });
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true);
       try {
+        setLoading(true);
         const blogData = await loadBlogData();
-        setPosts(blogData.posts);
+        setCategories(blogData.categories);
         setSeries(blogData.series);
-        setAuthors(blogData.authors);
+
+        if (isEditMode && postId) {
+          const post = await fetchSingleBlog(postId);
+          form.reset({
+            title: post.title,
+            description: post.description,
+            tags: post.tags,
+            isPublished: post.isPublished,
+            allowComments: post.allowComments,
+            seriesId: post.seriesId || null,
+            category: post.category,
+            content: post.content,
+          });
+        }
       } catch (error) {
-        console.error("Failed to load blog data:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [postId, isEditMode, form]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      try {
-        await deleteBlog(id);
-        setPosts(posts.filter((post) => post._id !== id));
-      } catch (error) {
-        console.error("Failed to delete post:", error);
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    setLoading(true);
+    try {
+      if (isEditMode && postId) {
+        await updateBlog({ _id: postId, ...values });
+      } else {
+        await createBlog(values);
       }
+      router.push("/manage-posts");
+    } catch (error) {
+      console.error("Failed to save post:", error);
+    } finally {
+      setLoading(false);
     }
   };
-
-  const getSeriesTitle = (seriesId: string | null) => {
-    if (!seriesId) return "N/A";
-    const seriesItem = series.find((s) => s._id === seriesId);
-    return seriesItem ? seriesItem.title : "Unknown";
-  };
-
-  const getAuthorName = (authorId: string) => {
-    // This is a placeholder since author data is not in the Post object yet
-    return "Admin"; 
-  };
-
-  if (loading) {
-    return <div className="text-center py-12">Loading posts...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-white">
       <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <h1 className="text-4xl font-thin text-white">Manage Posts</h1>
-          <Button asChild style={{ backgroundColor: "#7ACB59" }}>
-            <Link href="/manage-post/new">Create New Post</Link>
+        <div className="max-w-4xl mx-auto px-6">
+          <Button onClick={() => router.back()} variant="link" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 p-0">
+            ← Back
           </Button>
+          <h1 className="text-4xl md:text-6xl font-thin text-white">
+            {isEditMode ? "Edit Post" : "Create New Post"}
+          </h1>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto py-12 px-6">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Series</TableHead>
-              <TableHead>Author</TableHead>
-              <TableHead>Date Published</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {posts.map((post) => (
-              <TableRow key={post._id}>
-                <TableCell>{post.title}</TableCell>
-                <TableCell>{post.category || "N/A"}</TableCell>
-                <TableCell>{getSeriesTitle(post.seriesId)}</TableCell>
-                <TableCell>{getAuthorName(post.authorId)}</TableCell>
-                <TableCell>
-                  {post.publishedDate
-                    ? new Date(post.publishedDate).toLocaleDateString()
-                    : "Not Published"}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={post.isPublished ? "default" : "secondary"}>
-                    {post.isPublished ? "Published" : "Draft"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => router.push(`/manage-post/${post._id}`)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(post._id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <div className="container mx-auto max-w-4xl py-12">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            <Card className="p-6 space-y-6">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xl">Post Details</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Post title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Short description" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (comma-separated)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., tech, productivity" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.categoryId} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="seriesId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Series</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+                        value={field.value || "none"}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a series (optional)" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {series.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Content</FormLabel>
+                      <FormControl>
+                        <CKEditorComponent value={field.value} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex items-center space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Publish</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="allowComments"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Allow Comments</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type="submit" disabled={loading} style={{ backgroundColor: "#7ACB59" }}>
+                  {loading ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Post" : "Create Post")}
+                </Button>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
       </div>
     </div>
   );

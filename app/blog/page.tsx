@@ -1,154 +1,198 @@
 "use client"
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { loadBlogData, BlogData, Post, Series } from "@/lib/data-service";
-import PostCard from "@/components/post-card";
-import { Navbar } from "@/components/navbar";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react"
+import { useSearchParams } from 'next/navigation'
+import { Navbar } from "@/components/navbar"
+import { PortfolioGrid } from '@/components/portfolio-grid'
+import { loadBlogData, BlogData, Post } from "@/lib/data-service"
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
-const SeriesCard = ({ series }: { series: Series }) => (
-  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group p-4 border border-gray-200 h-full flex flex-col">
-    <h3 className="text-lg font-bold text-black mb-2">{series.title}</h3>
-    <p className="text-sm text-gray-600 flex-grow">{series.description}</p>
-  </div>
-);
-
-export default function LandingPage() {
-  const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] });
-  const [loading, setLoading] = useState(true);
-  const router = useRouter();
+export default function BlogPage() {
+  const searchParams = useSearchParams();
+  const [data, setData] = useState<BlogData>({ posts: [], authors: [], categories: [], series: [] })
+  const [currentCategory, setCurrentCategory] = useState<string>("")
+  const [currentTag, setCurrentTag] = useState<string>("")
+  const [currentSeries, setCurrentSeries] = useState<string>("");
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
 
   useEffect(() => {
     loadBlogData()
-      .then(setData)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+      .then((blogData: BlogData) => {
+        setData(blogData)
+        setLoading(false)
+        
+        // Check for URL params to set initial filter state
+        const categoryParam = searchParams.get('category');
+        const tagParam = searchParams.get('tag');
+        if (categoryParam) setCurrentCategory(categoryParam);
+        if (tagParam) setCurrentTag(tagParam);
+      })
+      .catch((error) => {
+        console.error("Error loading blog data:", error)
+        setLoading(false)
+      })
+  }, [searchParams])
 
-  const handleCategoryClick = (category: string) => {
-    router.push(`/blog?category=${category}`);
-  };
-
-  const handleTagClick = (tag: string) => {
-    router.push(`/blog?tag=${tag}`);
-  };
-  
-  const clearFilters = () => {
-    router.push('/blog');
+  const getAuthorName = (authorId: string) => {
+    const author = data.authors.find((a) => a.authorId === authorId)
+    return author ? author.name : "Unknown Author"
   }
 
-  const getAuthorName = (authorId: string) => data.authors.find(a => a.authorId === authorId)?.name || 'Unknown';
-  const getCategoryName = (categoryId: string) => data.categories.find(c => c.categoryId === categoryId)?.name || 'Uncategorized';
+  const getCategoryName = (categoryId: string) => {
+    const category = data.categories.find((c) => c.categoryId === categoryId)
+    return category ? category.name : "Uncategorized"
+  }
+  
+  const filteredPosts = data.posts
+    .filter((post) => {
+      // Always filter out drafts
+      if (!post.isPublished) {
+        return false;
+      }
+      
+      const query = searchQuery.toLowerCase();
+      const postTitleString = post.title?.toLowerCase() ?? '';
+      const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
+      const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
+      
+      const matchesSearch = searchQuery
+        ? postTitleString.includes(query) || 
+          postTagsString.includes(query)
+        : true;
 
-  const latestPosts = data.posts.slice(0, 10);
-  const technologyPosts = data.posts.filter(p => p.category === 'Technology').slice(0, 8);
-  const productivityPosts = data.posts.filter(p => p.category === 'Productivity').slice(0, 8);
+      const matchesCategory = currentCategory ? (postCategoryString === currentCategory.toLowerCase()) : true;
+      const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
+      const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
-  if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
+      return matchesSearch && matchesCategory && matchesTag && matchesSeries;
+    })
+    .sort((a, b) => {
+      if (a.publishedDate && b.publishedDate) {
+        return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+      }
+      return 0;
+    });
+  
+  const handleCategoryClick = (category: string) => {
+    setCurrentCategory(category)
+    setCurrentTag("")
+    setSearchQuery("")
+    setCurrentSeries("");
+  }
+
+  const handleTagClick = (tag: string) => {
+    setCurrentTag(tag)
+    setCurrentCategory("")
+    setSearchQuery("")
+    setCurrentSeries("");
+  }
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentCategory("");
+    setCurrentTag("");
+    setCurrentSeries("");
+  }
+
+  const clearFilters = () => {
+    setCurrentCategory("")
+    setCurrentTag("")
+    setSearchQuery("")
+    setCurrentSeries("");
   }
 
   return (
     <main className="min-h-screen bg-white">
-       <Navbar 
+      <Navbar
         categories={data.categories}
-        currentCategory=""
-        currentTag=""
+        currentCategory={currentCategory}
+        currentTag={currentTag}
         onCategoryClick={handleCategoryClick}
         onClearFilters={clearFilters}
       />
+      
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        {/* Section 1: All Series */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">All Series</h2>
-            <Button asChild variant="link">
-              <Link href="/blog">View All</Link>
-            </Button>
+        <div className="flex flex-wrap items-center justify-between mb-8">
+          <div className="w-full md:flex-grow md:flex md:justify-center order-2 md:order-1 mt-4 md:mt-0">
+            <input
+                type="text"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                className="w-full md:max-w-md px-4 py-2 text-sm rounded-full text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+            />
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {data.series.slice(0, 8).map((series) => (
-                <CarouselItem key={series._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <SeriesCard series={series} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+            
+          <div className="flex items-center gap-4 order-1 md:order-2 w-full md:w-auto md:justify-end">
+              {(currentCategory || currentTag) && (
+                <>
+                  <span className="text-sm text-gray-600">
+                    {currentCategory ? `Category: ${currentCategory}` : `Tag: ${currentTag}`}
+                  </span>
+                  <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
+                    Clear filter
+                  </button>
+                </>
+              )}
+          </div>
+        </div>
+        
+        <div className="flex justify-center mb-8">
+          <div className="w-full md:max-w-md">
+            <Label htmlFor="series-filter" className="sr-only">Filter by series</Label>
+            <Select
+              onValueChange={(value) => {
+                setCurrentSeries(value);
+                setCurrentCategory("");
+                setCurrentTag("");
+                setSearchQuery("");
+              }}
+              value={currentSeries}
+            >
+              <SelectTrigger id="series-filter">
+                <SelectValue placeholder="Filter by Series" />
+              </SelectTrigger>
+              <SelectContent>
+                {data.series.map((series) => (
+                  <SelectItem key={series._id} value={series._id}>
+                    {series.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        {/* Section 2: Latest Blog Posts */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Latest Blogs</h2>
-            <Button asChild variant="link">
-              <Link href="/blog">View All</Link>
-            </Button>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500">Loading posts...</div>
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {latestPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-
-        {/* Section 3: Featured Category - Technology */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Technology</h2>
-            <Button asChild variant="link">
-              <Link href="/blog?category=Technology">View All</Link>
-            </Button>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-500">
+              {currentCategory || currentTag || searchQuery ? "No posts found for this filter." : "No posts available."}
+            </div>
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {technologyPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-
-        {/* Section 4: Featured Category - Productivity */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Productivity</h2>
-            <Button asChild variant="link">
-              <Link href="/blog?category=Productivity">View All</Link>
-            </Button>
-          </div>
-           <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {productivityPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                 <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
+        ) : (
+          <PortfolioGrid
+              filteredPosts={filteredPosts}
+              authors={data.authors}
+              categories={data.categories}
+              getAuthorName={getAuthorName}
+              getCategoryName={getCategoryName}
+              onCategoryClick={handleCategoryClick}
+              onTagClick={handleTagClick}
+            />
+        )}
       </section>
     </main>
-  );
+  )
 }

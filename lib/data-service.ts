@@ -6,7 +6,7 @@ export interface Post {
   tags: string;
   seriesId: string | null;
   isPublished?: boolean;
-  publishedDate?: string;
+  publishedAt?: string;
   image: string[];
   category: string;
   file?: File | null;

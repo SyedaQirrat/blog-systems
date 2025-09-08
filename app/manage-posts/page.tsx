@@ -102,8 +102,8 @@ export default function ManagePostsPage() {
                       <TableCell>{getSeriesTitle(post.seriesId)}</TableCell>
                       <TableCell>{getAuthorName(post.authorId)}</TableCell>
                       <TableCell>
-                        {post.publishedDate
-                          ? new Date(post.publishedDate).toLocaleDateString()
+                        {post.publishedAt
+                          ? new Date(post.publishedAt).toLocaleDateString()
                           : "Not Published"}
                       </TableCell>
                       <TableCell>

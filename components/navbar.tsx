@@ -162,8 +162,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
   return (
     <header
       ref={containerRef}
-      className="relative text-white overflow-hidden cursor-none"
-      style={{ backgroundColor: "#0E4772" }}
+      className="relative text-white overflow-hidden cursor-none bg-primary-dark"
     >
       <svg
         className="absolute inset-0 w-full h-full opacity-30"
@@ -174,7 +173,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
           <path
             key={`line-${lineIndex}`}
             d={generatePath(lineIndex, lines.length)}
-            stroke="rgba(180, 220, 180, 0.9)" // <-- Brighter line color
+            stroke="rgba(180, 220, 180, 0.9)"
             strokeWidth={isHovering ? "6" : "5"}
             fill="none"
             className="transition-all duration-100 ease-out"
@@ -199,9 +198,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
       )}
 
       <div className="relative z-10">
-        {/* Top navigation bar */}
         <div className="flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 md:py-6">
-          {/* Logo and navigation links */}
           <div className="flex items-center">
             <Link href="/">
               <Image
@@ -209,7 +206,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
                 alt="SSTRACK BLOGS Logo"
                 width={55}
                 height={55}
-                className="mr-2"
+                className="mr-2 h-auto"
               />
             </Link>
           </div>
@@ -217,45 +214,25 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
           <div className="flex space-x-4">
           <Link
             href="/create-category"
-            style={{
-              backgroundColor: "#7ACB59",
-              color: "white",
-              border: `2px solid #7ACB59`
-            }}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer bg-primary-accent text-white border-2 border-primary-accent"
           >
             Create Category
           </Link>
             <Link
             href="/create-series"
-            style={{
-              backgroundColor: "#7ACB59",
-              color: "white",
-              border: `2px solid #7ACB59`
-            }}
-            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+            className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer bg-primary-accent text-white border-2 border-primary-accent"
           >
             Create Series
           </Link>
             <Link
-              href="/manage-post/new"
-              style={{
-                backgroundColor: "#7ACB59",
-                color: "white",
-                border: `2px solid #7ACB59`
-              }}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer"
+              href="/manage-posts/new"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer bg-primary-accent text-white border-2 border-primary-accent"
             >
               Create Post
             </Link>
             <Link
               href="/manage-posts"
-              style={{
-                backgroundColor: "#7ACB59",
-                color: "white",
-                border: `2px solid #7ACB59`
-              }}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:bg-[#7ACB59] hover:text-white transition-colors cursor-pointer"
+              className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full hover:opacity-80 transition-colors cursor-pointer bg-primary-accent text-white border-2 border-primary-accent"
             >
               Manage Posts
             </Link>
@@ -264,8 +241,7 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
 
         <div className="text-center px-4 sm:px-6 md:px-8 pb-8 md:pb-12">
           <h1
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-thin tracking-tight leading-none"
-            style={{ color: "#7ACB59" }}
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-thin tracking-tight leading-none text-primary-accent"
           >
             SSTRACK BLOGS
           </h1>
@@ -273,30 +249,22 @@ export function Navbar({ categories, currentCategory, currentTag, onCategoryClic
 
         <div className="px-4 sm:px-6 md:px-8 pb-6 md:pb-8">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-            {/* ALL filter */}
             <button
               onClick={onClearFilters}
-              style={{
-                backgroundColor: !currentCategory && !currentTag ? "#7ACB59" : "transparent",
-                color: !currentCategory && !currentTag ? "white" : "#7ACB59",
-                border: `2px solid #7ACB59`,
-              }}
-              className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer`}
+              className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer border-2 border-primary-accent 
+                ${!currentCategory && !currentTag ? 'bg-primary-accent text-white' : 'bg-transparent text-primary-accent'}`
+              }
             >
               ALL
             </button>
 
-            {/* Dynamic category filters */}
             {categories.map((category) => (
               <button
                 key={category.categoryId}
                 onClick={() => onCategoryClick(category.name)}
-                style={{
-                  backgroundColor: currentCategory === category.name ? "#7ACB59" : "transparent",
-                  color: currentCategory === category.name ? "white" : "#7ACB59",
-                  border: `2px solid #7ACB59`,
-                }}
-                className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer`}
+                className={`px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-colors cursor-pointer border-2 border-primary-accent
+                  ${currentCategory === category.name ? 'bg-primary-accent text-white' : 'bg-transparent text-primary-accent'}`
+                }
               >
                 {category.name.toUpperCase()}
               </button>

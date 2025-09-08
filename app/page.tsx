@@ -52,15 +52,15 @@ export default function LandingPage() {
 
   // Use the filtered list to create the sections
   const latestPosts = publishedPosts.slice(0, 10);
-  const technologyPosts = publishedPosts.filter(p => p.category === 'Technology').slice(0, 8);
-  const productivityPosts = publishedPosts.filter(p => p.category === 'Productivity').slice(0, 8);
+  const technologyPosts = publishedPosts.filter(p => p.category === 'tech').slice(0, 8);
+  const productivityPosts = publishedPosts.filter(p => p.category === 'productivity').slice(0, 8);
 
   if (loading) {
     return <div className="text-center py-12">Loading...</div>;
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <>
        <Navbar 
         categories={data.categories}
         currentCategory=""
@@ -153,6 +153,6 @@ export default function LandingPage() {
           </Carousel>
         </div>
       </section>
-    </main>
+    </>
   );
 }

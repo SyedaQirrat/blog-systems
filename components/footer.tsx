@@ -1,79 +1,100 @@
-"use client"
+import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-import { useRef, useState, useEffect } from "react";
+// A simple placeholder for icons
+const IconPlaceholder = ({ name }: { name: string }) => (
+  <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center text-xs">
+    {name.charAt(0)}
+  </div>
+);
 
 export function Footer() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 400 });
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.offsetWidth,
-          height: containerRef.current.offsetHeight,
-        });
-      }
-    };
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = containerRef.current!.getBoundingClientRect();
-      setMousePosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    };
-    const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
-
-    const node = containerRef.current;
-    node.addEventListener("mousemove", handleMouseMove);
-    node.addEventListener("mouseenter", handleMouseEnter);
-    node.addEventListener("mouseleave", handleMouseLeave);
-
-    return () => {
-      node.removeEventListener("mousemove", handleMouseMove);
-      node.removeEventListener("mouseenter", handleMouseEnter);
-      node.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, []);
-
-  const getLineCount = () => 11;
-  const generatePath = (lineIndex: number, totalLines: number) => {
-    const { width, height } = dimensions;
-    const y = ((lineIndex + 1) / (totalLines + 1)) * height;
-    const curve = 50 * ((lineIndex % 2) ? 1 : -1);
-    return `M0,${y} Q${width / 2},${y + curve} ${width},${y}`;
-  };
-  const lines = Array.from({ length: getLineCount() }, (_, i) => i);
-
   return (
-    <footer
-      ref={containerRef}
-      style={{
-        backgroundColor: "#0E4772",
-        color: "#7ACB59",
-        borderTop: "2px solid #7ACB59",
-        padding: "1rem",
-        textAlign: "center",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Footer bottom */}
-      <div className="bg-white border-t border-gray-100 py-8 px-4 sm:px-6 md:px-8" style={{ position: "relative", zIndex: 1 }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm text-gray-500">
-            © 2025 SSTRACK.io  All rights reserved.
+    <footer className="bg-primary-dark text-white">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        {/* Top section with CTA */}
+        <div className="border-b border-gray-700 pb-8 mb-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            <h2 className="text-2xl font-bold text-center lg:text-left">
+              Ready to get started?
+            </h2>
+            <form className="flex w-full max-w-md gap-2">
+              <Input
+                type="email"
+                placeholder="Enter your work email"
+                className="bg-gray-800 border-gray-700 text-white flex-grow"
+              />
+              <Button type="submit" className="bg-primary-accent hover:bg-primary-accent/90">
+                Sign Up
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Main grid with links */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-1">
+            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Product</h4>
+            <ul className="space-y-2">
+              <li><Link href="https://chromewebstore.google.com/detail/sstrack/gkmllhjndmaaapegaopkpapaamfaeckg?hl=en-US" className="text-white hover:text-white">Chrome Extension</Link></li>
+              <li><Link href="https://www.sstrack.io/download" className="text-white hover:text-white">Desktop Application</Link></li>
+              <li><Link href="https://play.google.com/store/apps/details?id=com.SSTRACK&pcampaignid=web_share" className="text-white hover:text-white">Mobile Application</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Integrations</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Pricing</Link></li>
+            </ul>
+          </div>
+          <div className="lg:col-span-1">
+            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Features</h4>
+            <ul className="space-y-2">
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Time Tracker with Screenshot</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Employee Timesheet Software</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">GPS Time Clock</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Overtime Tracker</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Time Reporting</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Attendance Tracker</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Web Based Time Tracker</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Activity Log App</Link></li>
+            </ul>
+          </div>
+          <div className="lg:col-span-1">
+            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Company</h4>
+            <ul className="space-y-2">
+              <li><Link href="https://www.sstrack.io/aboutUs" className="text-white hover:text-white">About Us</Link></li>
+              <li><Link href="https://www.sstrack.io/contactUs" className="text-white hover:text-white">Contact Us</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Privacy Policy</Link></li>
+              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">FAQ</Link></li>
+            </ul>
+            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Apps Download</h4>
+
+            <ul className="space-y-2">
+              
+              <li><Link href="#" className="text-white hover:text-white">Windows time tracker</Link></li>
+              <li><Link href="#" className="text-white hover:text-white">Android time tracker</Link></li>
+              <li><Link href="#" className="text-white hover:text-white">IOS time tracker</Link></li>
+            </ul>
+          </div>
+          <div className="lg:col-span-1">
+            
+          </div>
+          <div className="lg:col-span-1 col-span-2">
+            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Follow us on social media</h4>
+             <p className="text-white text-sm mb-4">Stay connected for updates and productivity tips.</p>
+            <div className="flex space-x-4">
+               <Link href="#"><IconPlaceholder name="in" /></Link>
+               <Link href="#"><IconPlaceholder name="f" /></Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom section with copyright */}
+        <div className="mt-8 pt-8 border-t border-gray-700 flex flex-col sm:flex-row items-center justify-between">
+          <p className="text-white text-sm">
+            All Rights Reserved {new Date().getFullYear()} SSTRACK.IO
           </p>
+          <div className="mt-4 sm:mt-0">
+            {/* You can add logo here if needed */}
+          </div>
         </div>
       </div>
     </footer>

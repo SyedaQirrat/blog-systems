@@ -53,7 +53,7 @@ export default function CreateSeriesPage() {
         title: values.title,
         description: values.description,
         file: file,
-        blogsId: [], // The API will handle this, but we need to provide it
+        blogsId: [],
       });
       router.push("/");
     } catch (error) {

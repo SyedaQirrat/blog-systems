@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from "@/components/navbar"
 import { PortfolioGrid } from '@/components/portfolio-grid'
-import { loadBlogData, BlogData } from "@/lib/data-service"
+import { loadBlogData, BlogData, Post } from "@/lib/data-service"
 import {
   Select,
   SelectContent,
@@ -59,14 +59,18 @@ export default function BlogPageClient() {
       const query = searchQuery.toLowerCase();
       const postTitleString = post.title?.toLowerCase() ?? '';
       const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
-      const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
+      
+      // *** THIS IS THE FIX ***
+      // First, get the full category name from the post's category ID
+      const postCategoryName = getCategoryName(post.category).toLowerCase();
       
       const matchesSearch = searchQuery
         ? postTitleString.includes(query) || 
           postTagsString.includes(query)
         : true;
 
-      const matchesCategory = currentCategory ? (postCategoryString === currentCategory.toLowerCase()) : true;
+      // Then, compare the full name with the selected filter
+      const matchesCategory = currentCategory ? (postCategoryName === currentCategory.toLowerCase()) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
       const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
@@ -131,7 +135,6 @@ export default function BlogPageClient() {
           )}
         </div>
 
-        {/* Combined Filter and Search Container */}
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
           <div className="w-full sm:w-auto sm:flex-grow max-w-md">
             <input

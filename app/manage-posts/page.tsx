@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loadBlogData, deleteblogs, Post, Series, Author } from "@/lib/data-service";
+import { loadBlogData, deleteblogs, Post, Series, Author, Category } from "@/lib/data-service";
 import {
   Table,
   TableBody,
@@ -16,11 +16,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Trash, Pencil } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Header } from "@/components/header";
 
 export default function ManagePostsPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // State for categories
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -32,6 +34,7 @@ export default function ManagePostsPage() {
         setPosts(blogData.posts);
         setSeries(blogData.series);
         setAuthors(blogData.authors);
+        setCategories(blogData.categories); // Load categories into state
       } catch (error) {
         console.error("Failed to load blog data:", error);
       } finally {
@@ -59,28 +62,26 @@ export default function ManagePostsPage() {
   };
 
   const getAuthorName = (authorId: string | undefined) => {
-    if (!authorId) return "Admin"; 
+    if (!authorId) return "Admin";
     const author = authors.find((a) => a.authorId === authorId);
     return author ? author.name : "Admin";
   };
 
+  // Function to look up the category name from its ID
+  const getCategoryName = (categoryId: string) => {
+    if (!categoryId) return "N/A";
+    const category = categories.find((c) => c.categoryId === categoryId);
+    return category ? category.name : categoryId; // Fallback to ID if not found
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <h1 className="text-4xl md:text-6xl font-thin text-white">Manage Posts</h1>
-          <Button asChild style={{ backgroundColor: "#7ACB59" }}>
-            <Link href="/manage-post/new">Create New Post</Link>
-          </Button>
-        </div>
-      </div>
+    <>
+      <Header />
       <div className="container mx-auto max-w-7xl py-12">
         <Card>
           <CardContent className="p-0">
             {loading ? (
               <div className="text-center py-12">Loading posts...</div>
-            ) : posts.length === 0 ? (
-              <div className="text-center py-12">No posts found.</div>
             ) : (
               <Table>
                 <TableHeader>
@@ -98,7 +99,8 @@ export default function ManagePostsPage() {
                   {posts.map((post) => (
                     <TableRow key={post._id}>
                       <TableCell className="font-medium">{post.title}</TableCell>
-                      <TableCell>{post.category || 'N/A'}</TableCell>
+                      {/* Use the getCategoryName function to display the correct name */}
+                      <TableCell>{getCategoryName(post.category)}</TableCell>
                       <TableCell>{getSeriesTitle(post.seriesId)}</TableCell>
                       <TableCell>{getAuthorName(post.authorId)}</TableCell>
                       <TableCell>
@@ -133,6 +135,6 @@ export default function ManagePostsPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 }

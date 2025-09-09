@@ -1,100 +1,165 @@
+"use client"
+
 import Link from "next/link";
+import Image from "next/image";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Instagram, Facebook, Linkedin } from 'lucide-react';
 
-// A simple placeholder for icons
-const IconPlaceholder = ({ name }: { name: string }) => (
-  <div className="w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center text-xs">
-    {name.charAt(0)}
-  </div>
-);
+// Data for the footer links to keep the component clean
+const productLinks = [
+  { href: "https://chromewebstore.google.com/detail/sstrack/gkmllhjndmaaapegaopkpapaamfaeckg?hl=en-US", text: "Chrome Extension" },
+  { href: "/download", text: "Desktop Application" },
+  { href: "https://play.google.com/store/apps/details?id=com.SSTRACK&pcampaignid=web_share", text: "Mobile Application" },
+  { href: "/signup", text: "Integrations" },
+  { href: "/#pricing", text: "Pricing", badge: "Free trial" },
+];
+
+const featureLinks = [
+  { href: "/signup", text: "Time tracker with screenshots" },
+  { href: "/signup", text: "Employee timesheet software" },
+  { href: "/signup", text: "GPS time clock" },
+  { href: "/signup", text: "Overtime tracker" },
+  { href: "/signup", text: "Time reporting" },
+  { href: "/signup", text: "Attendance tracker" },
+];
+
+const companyLinks = [
+  { href: "/aboutUs", text: "About Us" },
+  { href: "/contact", text: "Contact Us" },
+  { href: "/privacy-policy", text: "Privacy Policy" },
+  { href: "/#faq", text: "FAQ" },
+];
+
+const appLinks = [
+    { href: "/download", text: "Windows time tracker" },
+    { href: "/download", text: "Android time tracker" },
+    { href: "/download", text: "iOS time tracker" },
+];
 
 export function Footer() {
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  
+  const onSubmit = (data: any) => {
+    console.log("Signup attempt with email:", data.email);
+    // TODO: Implement actual signup logic
+    // For now, you can navigate to signup page with email as query param
+    // router.push(`/signup?email=${data.email}`);
+  };
+
   return (
-    <footer className="bg-primary-dark text-white">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        {/* Top section with CTA */}
-        <div className="border-b border-gray-700 pb-8 mb-8">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
-            <h2 className="text-2xl font-bold text-center lg:text-left">
-              Ready to get started?
-            </h2>
-            <form className="flex w-full max-w-md gap-2">
+    <footer className="bg-primary-dark text-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+          
+          {/* Product Links */}
+          <div>
+            <h4 className="font-semibold mb-4">Product</h4>
+            <ul className="space-y-2">
+              {productLinks.map((link, index) => (
+                <li key={index}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                    {link.text}
+                    {link.badge && (
+                      <span className="ml-2 text-xs bg-primary-accent text-white px-2 py-0.5 rounded-full">
+                        {link.badge}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Features Links */}
+          <div>
+            <h4 className="font-semibold mb-4">Features</h4>
+            <ul className="space-y-2">
+              {featureLinks.map((link, index) => (
+                <li key={index}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                    {link.text}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company & Apps Links */}
+          <div>
+            <h4 className="font-semibold mb-4">Company</h4>
+            <ul className="space-y-2">
+              {companyLinks.map((link, index) => (
+                <li key={index}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                    {link.text}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h4 className="font-semibold mb-4 mt-8">Apps Download</h4>
+            <ul className="space-y-2">
+              {appLinks.map((link, index) => (
+                 <li key={index}>
+                  <Link href={link.href} className="text-sm text-gray-400 hover:text-white transition-colors">
+                    {link.text}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Signup Form and Socials */}
+          <div className="col-span-2 lg:col-span-2">
+            <h4 className="font-semibold">Ready to get started?</h4>
+            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-2 mt-4">
               <Input
                 type="email"
                 placeholder="Enter your work email"
-                className="bg-gray-800 border-gray-700 text-white flex-grow"
+                {...register("email", { required: "Email is required" })}
+                className="bg-gray-800 border-gray-700 text-white"
               />
-              <Button type="submit" className="bg-primary-accent hover:bg-primary-accent/90">
+              <Button type="submit" className="bg-primary-accent hover:bg-primary-accent/90 w-full">
                 Sign Up
               </Button>
+               {errors.email && <p className="text-red-500 text-sm mt-1">{(errors.email as any).message}</p>}
             </form>
-          </div>
-        </div>
 
-        {/* Main grid with links */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-1">
-            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Product</h4>
-            <ul className="space-y-2">
-              <li><Link href="https://chromewebstore.google.com/detail/sstrack/gkmllhjndmaaapegaopkpapaamfaeckg?hl=en-US" className="text-white hover:text-white">Chrome Extension</Link></li>
-              <li><Link href="https://www.sstrack.io/download" className="text-white hover:text-white">Desktop Application</Link></li>
-              <li><Link href="https://play.google.com/store/apps/details?id=com.SSTRACK&pcampaignid=web_share" className="text-white hover:text-white">Mobile Application</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Integrations</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Pricing</Link></li>
-            </ul>
-          </div>
-          <div className="lg:col-span-1">
-            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Features</h4>
-            <ul className="space-y-2">
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Time Tracker with Screenshot</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Employee Timesheet Software</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">GPS Time Clock</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Overtime Tracker</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Time Reporting</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Attendance Tracker</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Web Based Time Tracker</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Activity Log App</Link></li>
-            </ul>
-          </div>
-          <div className="lg:col-span-1">
-            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Company</h4>
-            <ul className="space-y-2">
-              <li><Link href="https://www.sstrack.io/aboutUs" className="text-white hover:text-white">About Us</Link></li>
-              <li><Link href="https://www.sstrack.io/contactUs" className="text-white hover:text-white">Contact Us</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">Privacy Policy</Link></li>
-              <li><Link href="https://www.sstrack.io/signup" className="text-white hover:text-white">FAQ</Link></li>
-            </ul>
-            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Apps Download</h4>
-
-            <ul className="space-y-2">
-              
-              <li><Link href="#" className="text-white hover:text-white">Windows time tracker</Link></li>
-              <li><Link href="#" className="text-white hover:text-white">Android time tracker</Link></li>
-              <li><Link href="#" className="text-white hover:text-white">IOS time tracker</Link></li>
-            </ul>
-          </div>
-          <div className="lg:col-span-1">
+            <div className="mt-8">
+              <h6 className="font-semibold">Follow us on social media</h6>
+              <p className="text-sm text-gray-400 mt-2">Stay connected for updates and productivity tips.</p>
+              <div className="flex space-x-4 mt-4">
+                <Link href="https://www.instagram.com/sstrack.io" className="text-gray-400 hover:text-white">
+                  <Instagram />
+                </Link>
+                <Link href="https://www.facebook.com/sstrack.io" className="text-gray-400 hover:text-white">
+                  <Facebook />
+                </Link>
+                <Link href="https://www.linkedin.com/company/sstrack-io" className="text-gray-400 hover:text-white">
+                  <Linkedin />
+                </Link>
+              </div>
+            </div>
             
-          </div>
-          <div className="lg:col-span-1 col-span-2">
-            <h4 className="text-sm font-semibold tracking-wider uppercase mb-4">Follow us on social media</h4>
-             <p className="text-white text-sm mb-4">Stay connected for updates and productivity tips.</p>
-            <div className="flex space-x-4">
-               <Link href="#"><IconPlaceholder name="in" /></Link>
-               <Link href="#"><IconPlaceholder name="f" /></Link>
+            <div className="mt-8">
+              <Link href="/">
+                <Image
+                  src="https://sstrack-public-assets.s3.ca-central-1.amazonaws.com/images/sloganLogo.png"
+                  alt="SSTrack.io Logo"
+                  width={250}
+                  height={50}
+                  className="h-auto"
+                />
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Bottom section with copyright */}
-        <div className="mt-8 pt-8 border-t border-gray-700 flex flex-col sm:flex-row items-center justify-between">
-          <p className="text-white text-sm">
-            All Rights Reserved {new Date().getFullYear()} SSTRACK.IO
+        <div className="mt-12 pt-8 border-t border-gray-700 text-center">
+          <p className="text-sm text-gray-400">
+            © All Rights Reserved {new Date().getFullYear()} SSTRACK.IO
           </p>
-          <div className="mt-4 sm:mt-0">
-            {/* You can add logo here if needed */}
-          </div>
         </div>
       </div>
     </footer>

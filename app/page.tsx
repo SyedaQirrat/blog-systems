@@ -94,7 +94,7 @@ export default function LandingPage() {
           </div>
 
           {/* Section 2: Latest Blog Posts */}
-            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+            <div className="rounded-lg mb-12 overflow-hidden">
             {/* Blue line at the top */}
             <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
             <div className="p-6 sm:p-8">
@@ -119,7 +119,7 @@ export default function LandingPage() {
           </div>
 
           {/* Section 3: Featured Category - Technology */}
-            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+            <div className="rounded-lg mb-12 overflow-hidden">
                {/* Blue line at the top */}
             <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
             <div className="p-6 sm:p-8">
@@ -144,7 +144,7 @@ export default function LandingPage() {
           </div>
 
           {/* Section 4: Featured Category - Productivity */}
-            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+            <div className="rounded-lg mb-12 overflow-hidden">
                {/* Blue line at the top */}
             <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
             <div className="p-6 sm:p-8">

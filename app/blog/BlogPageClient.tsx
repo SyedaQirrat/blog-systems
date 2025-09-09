@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from "@/components/navbar"
 import { PortfolioGrid } from '@/components/portfolio-grid'
-import { loadBlogData, BlogData, Post } from "@/lib/data-service"
+import { loadBlogData, BlogData } from "@/lib/data-service"
 import {
   Select,
   SelectContent,
@@ -73,7 +73,6 @@ export default function BlogPageClient() {
       return matchesSearch && matchesCategory && matchesTag && matchesSeries;
     })
     .sort((a, b) => {
-      // Corrected from publishedDate to publishedAt
       if (a.publishedAt && b.publishedAt) {
         return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
       }
@@ -119,33 +118,31 @@ export default function BlogPageClient() {
       />
       
       <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        <div className="flex flex-wrap items-center justify-between mb-8">
-          <div className="w-full md:flex-grow md:flex md:justify-center order-2 md:order-1 mt-4 md:mt-0">
+        <div className="flex justify-end mb-4">
+          {(currentCategory || currentTag) && (
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                {currentCategory ? `Category: ${currentCategory}` : `Tag: ${currentTag}`}
+              </span>
+              <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
+                Clear filter
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Combined Filter and Search Container */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+          <div className="w-full sm:w-auto sm:flex-grow max-w-md">
             <input
-                type="text"
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="w-full md:max-w-md px-4 py-2 text-sm rounded-full text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400"
+              type="text"
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full px-4 py-2 text-sm rounded-full text-black bg-white border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-accent"
             />
           </div>
-            
-          <div className="flex items-center gap-4 order-1 md:order-2 w-full md:w-auto md:justify-end">
-              {(currentCategory || currentTag) && (
-                <>
-                  <span className="text-sm text-gray-600">
-                    {currentCategory ? `Category: ${currentCategory}` : `Tag: ${currentTag}`}
-                  </span>
-                  <button onClick={clearFilters} className="text-sm text-blue-600 hover:text-blue-800 underline">
-                    Clear filter
-                  </button>
-                </>
-              )}
-          </div>
-        </div>
-        
-        <div className="flex justify-center mb-8">
-          <div className="w-full md:max-w-md">
+          <div className="w-full sm:w-auto sm:min-w-[240px]">
             <Label htmlFor="series-filter" className="sr-only">Filter by series</Label>
             <Select
               onValueChange={(value) => {

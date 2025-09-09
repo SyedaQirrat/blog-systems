@@ -47,10 +47,8 @@ export default function LandingPage() {
   const getAuthorName = (authorId: string) => data.authors.find(a => a.authorId === authorId)?.name || 'Unknown';
   const getCategoryName = (categoryId: string) => data.categories.find(c => c.categoryId === categoryId)?.name || 'Uncategorized';
 
-  // Filter for only published posts first
   const publishedPosts = data.posts.filter(post => post.isPublished);
 
-  // Use the filtered list to create the sections
   const latestPosts = publishedPosts.slice(0, 10);
   const technologyPosts = publishedPosts.filter(p => p.category === 'tech').slice(0, 8);
   const productivityPosts = publishedPosts.filter(p => p.category === 'productivity').slice(0, 8);
@@ -68,91 +66,109 @@ export default function LandingPage() {
         onCategoryClick={handleCategoryClick}
         onClearFilters={clearFilters}
       />
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        {/* Section 1: All Series */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">All Series</h2>
-            <Button asChild variant="link">
-              <Link href="/blog">View All</Link>
-            </Button>
+      <main className="bg-gray-50">
+        <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
+          {/* Section 1: All Series */}
+            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+            {/* Blue line at the top */}
+            <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-black">All Series</h2>
+                <Button asChild variant="link">
+                  <Link href="/blog">View All</Link>
+                </Button>
+              </div>
+              <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                <CarouselContent>
+                  {data.series.slice(0, 8).map((series) => (
+                    <CarouselItem key={series._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <div className="p-1 h-full">
+                        <SeriesCard series={series} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {data.series.slice(0, 8).map((series) => (
-                <CarouselItem key={series._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <SeriesCard series={series} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
 
-        {/* Section 2: Latest Blog Posts */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Latest Blogs</h2>
-            <Button asChild variant="link">
-              <Link href="/blog">View All</Link>
-            </Button>
+          {/* Section 2: Latest Blog Posts */}
+            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+            {/* Blue line at the top */}
+            <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-black">Latest Blogs</h2>
+                <Button asChild variant="link">
+                  <Link href="/blog">View All</Link>
+                </Button>
+              </div>
+              <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                <CarouselContent>
+                  {latestPosts.map(post => (
+                    <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <div className="p-1 h-full">
+                        <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {latestPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
 
-        {/* Section 3: Featured Category - Technology */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Technology</h2>
-            <Button asChild variant="link">
-              <Link href="/blog?category=Technology">View All</Link>
-            </Button>
+          {/* Section 3: Featured Category - Technology */}
+            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+               {/* Blue line at the top */}
+            <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-black">Technology</h2>
+                <Button asChild variant="link">
+                  <Link href="/blog?category=Technology">View All</Link>
+                </Button>
+              </div>
+              <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                <CarouselContent>
+                  {technologyPosts.map(post => (
+                    <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                      <div className="p-1 h-full">
+                        <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
           </div>
-          <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {technologyPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                  <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
 
-        {/* Section 4: Featured Category - Productivity */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold text-black">Productivity</h2>
-            <Button asChild variant="link">
-              <Link href="/blog?category=Productivity">View All</Link>
-            </Button>
+          {/* Section 4: Featured Category - Productivity */}
+            <div style={{ backgroundColor: '#7ACB59' }} className="rounded-lg mb-12 overflow-hidden">
+               {/* Blue line at the top */}
+            <div className="h-1 w-full" style={{ backgroundColor: '#0E4772' }} />
+            <div className="p-6 sm:p-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-black">Productivity</h2>
+                <Button asChild variant="link">
+                  <Link href="/blog?category=Productivity">View All</Link>
+                </Button>
+              </div>
+              <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                <CarouselContent>
+                  {productivityPosts.map(post => (
+                    <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                    <div className="p-1 h-full">
+                        <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+            </div>
           </div>
-           <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
-            <CarouselContent>
-              {productivityPosts.map(post => (
-                <CarouselItem key={post._id} className="basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
-                 <div className="p-1 h-full">
-                    <PostCard post={post} getAuthorName={getAuthorName} getCategoryName={getCategoryName} onCategoryClick={handleCategoryClick} onTagClick={handleTagClick} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
-        </div>
-      </section>
+        </section>
+      </main>
     </>
   );
 }

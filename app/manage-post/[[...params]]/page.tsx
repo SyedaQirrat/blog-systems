@@ -33,7 +33,7 @@ const formSchema = z.object({
   tags: z.string().optional(),
   isPublished: z.boolean().default(false),
   allowComments: z.boolean().default(true),
-  seriesId: z.string().optional().nullable(),
+  seriesId: z.string({ required_error: "Please select a series." }).min(1, { message: "A series is required." }),
   category: z.string({ required_error: "Please select a category." }).min(1, { message: "Please select a category." }),
   content: z.string().min(20, { message: "Content must be at least 20 characters." }),
 });
@@ -55,7 +55,7 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
       tags: "",
       isPublished: false,
       allowComments: true,
-      seriesId: null,
+      seriesId: "",
       category: "",
       content: "",
     },
@@ -77,7 +77,7 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
             tags: post.tags,
             isPublished: post.isPublished,
             allowComments: post.allowComments,
-            seriesId: post.seriesId || null,
+            seriesId: post.seriesId,
             category: post.category,
             content: post.content,
           });
@@ -168,6 +168,30 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
                 />
                 <FormField
                   control={form.control}
+                  name="seriesId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Series</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a series for this post" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {series.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="category"
                   render={({ field }) => (
                     <FormItem>
@@ -182,34 +206,6 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
                           {categories.map((category) => (
                             <SelectItem key={category.categoryId} value={category.name}>
                               {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="seriesId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Series</FormLabel>
-                      <Select
-                        onValueChange={(value) => field.onChange(value === "none" ? null : value)}
-                        value={field.value || "none"}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a series (optional)" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {series.map((s) => (
-                            <SelectItem key={s._id} value={s._id}>
-                              {s.title}
                             </SelectItem>
                           ))}
                         </SelectContent>

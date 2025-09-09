@@ -59,7 +59,7 @@ export default function ManagePostsPage() {
   };
 
   const getAuthorName = (authorId: string | undefined) => {
-    if (!authorId) return "Admin"; // Default or placeholder
+    if (!authorId) return "Admin"; 
     const author = authors.find((a) => a.authorId === authorId);
     return author ? author.name : "Admin";
   };

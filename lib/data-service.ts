@@ -4,7 +4,7 @@ export interface Post {
   content: string;
   description: string;
   tags: string;
-  seriesId: string | null;
+  seriesId: string; // Changed from optional to required
   isPublished?: boolean;
   publishedAt?: string;
   image: string[];
@@ -13,6 +13,7 @@ export interface Post {
   allowComments?: boolean;
   authorId?: string;
 }
+
 
 export interface Author {
   authorId: string;
@@ -40,7 +41,7 @@ export interface BlogData {
 }
 
 const BASE_URL = 'https://myuniversallanguages.com:9093';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGFjOGNjYTVjNDlmMjM5ODJkZjAyY2EiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoic3llZGFxaXJyYXRmYXRpbWFAZ21haWwuY29tIiwibmFtZSI6IlN5ZWRhIFFpcnJhdCBGYXRpbWEgWmFpZGkiLCJ1c2VyVHlwZSI6ImFkbWluIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwicGFzc3dvcmQiOiIkMmEkMTIkVjdtSlVpNE1NS1dzSDVCL080TmZLLmhOYi9QNHhIQ3IuNXdQYThVUGowR29wdThtbXAwdjIiLCJpczJGQUVuYWJsZWQiOnRydWUsImlhdCI6MTc1NzA2NzU3OCwiZXhwIjoxNzU3MDk2Mzc4fQ.h1VCj6DCnppOUyWgsEI_8xgAm4w9MsVP3q9UV2BEkiI';
+const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGFjOGNjYTVjNDlmMjM5ODJkZjAyY2EiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoic3llZGFxaXJyYXRmYXRpbWFAZ21haWwuY29tIiwibmFtZSI6IlN5ZWRhIFFpcnJhdCBGYXRpbWEgWmFpZGkiLCJ1c2VyVHlwZSI6ImFkbWluIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwicGFzc3dvcmQiOiIkMmEkMTIkVVAyOE41Y0hxb2FyTkdkUDZDMDVGZU03Qi9tWmZFT3VpWDc1Y0ZGWXFHM0o3eFRYRFFlZ3EiLCJpczJGQUVuYWJsZWQiOnRydWUsImlhdCI6MTc1NzQyODg1NiwiZXhwIjoxNzU3NDU3NjU2fQ.PwMm5qE3x88c0FFD6AmHbrM6_pSkPaZKPSEUc58l4Wk';
 
 const API_HEADERS = {
   'Authorization': `Bearer ${AUTH_TOKEN}`,

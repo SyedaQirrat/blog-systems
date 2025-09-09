@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from "@/components/navbar"
 import { PortfolioGrid } from '@/components/portfolio-grid'
-import { loadBlogData, BlogData } from "@/lib/data-service"
+import { loadBlogData, BlogData, Post } from "@/lib/data-service"
 import {
   Select,
   SelectContent,
@@ -52,7 +52,7 @@ export default function BlogPageClient() {
   
   const filteredPosts = data.posts
     .filter((post) => {
-      if (!(post.isPublished ?? false)) {
+      if (!post.isPublished) {
         return false;
       }
       
@@ -66,15 +66,16 @@ export default function BlogPageClient() {
           postTagsString.includes(query)
         : true;
 
-      const matchesCategory = currentCategory ? (postCategoryString.toLowerCase() === currentCategory.toLowerCase()) : true;
+      const matchesCategory = currentCategory ? (postCategoryString === currentCategory.toLowerCase()) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
       const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
       return matchesSearch && matchesCategory && matchesTag && matchesSeries;
     })
     .sort((a, b) => {
-      if (a.publishedDate && b.publishedDate) {
-        return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+      // Corrected from publishedDate to publishedAt
+      if (a.publishedAt && b.publishedAt) {
+        return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
       }
       return 0;
     });
@@ -176,7 +177,7 @@ export default function BlogPageClient() {
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500">
-              {currentCategory || currentTag || searchQuery ? "No posts found for this filter." : "No posts available."}
+              {currentCategory || currentTag || currentSeries || searchQuery ? "No posts found for this filter." : "No posts available."}
             </div>
           </div>
         ) : (

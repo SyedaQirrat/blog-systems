@@ -64,10 +64,10 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Link href="/about" className="text-sm font-medium text-gray-600 hover:text-primary-dark transition-colors">
+            <Link href="https://www.sstrack.io/aboutUs" className="text-sm font-medium text-gray-600 hover:text-primary-dark transition-colors">
               About Us
             </Link>
-            <Link href="/contact" className="text-sm font-medium text-gray-600 hover:text-primary-dark transition-colors">
+            <Link href="https://www.sstrack.io/contact" className="text-sm font-medium text-gray-600 hover:text-primary-dark transition-colors">
               Contact Us
             </Link>
             
@@ -91,7 +91,6 @@ export function Header() {
             <div className="flex items-center space-x-2 cursor-pointer">
               <div className="w-8 h-8 rounded-full bg-gray-200" />
               <p className="text-sm font-medium text-gray-800 hidden lg:block">Syeda Qirrat</p>
-              <ChevronDown className="h-4 w-4 text-gray-600" />
             </div>
           </div>
         </div>

@@ -78,9 +78,7 @@ export default function LandingPage() {
               <div className="p-6 sm:p-8">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-3xl font-bold text-black">All Series</h2>
-                  <Button asChild variant="link" className="text-black">
-                    <Link href="/blog">View All</Link>
-                  </Button>
+                  
                 </div>
                 <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
                   <CarouselContent>

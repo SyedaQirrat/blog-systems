@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from "@/components/navbar"
 import { PortfolioGrid } from '@/components/portfolio-grid'
-import { loadBlogData, BlogData, Post } from "@/lib/data-service"
+import { loadBlogData, BlogData } from "@/lib/data-service"
 import {
   Select,
   SelectContent,
@@ -59,18 +59,14 @@ export default function BlogPageClient() {
       const query = searchQuery.toLowerCase();
       const postTitleString = post.title?.toLowerCase() ?? '';
       const postTagsString = typeof post.tags === 'string' ? post.tags.toLowerCase() : '';
-      
-      // *** THIS IS THE FIX ***
-      // First, get the full category name from the post's category ID
-      const postCategoryName = getCategoryName(post.category).toLowerCase();
+      const postCategoryString = typeof post.category === 'string' ? post.category.toLowerCase() : '';
       
       const matchesSearch = searchQuery
         ? postTitleString.includes(query) || 
           postTagsString.includes(query)
         : true;
 
-      // Then, compare the full name with the selected filter
-      const matchesCategory = currentCategory ? (postCategoryName === currentCategory.toLowerCase()) : true;
+      const matchesCategory = currentCategory ? (postCategoryString === currentCategory.toLowerCase()) : true;
       const matchesTag = currentTag ? postTagsString.split(',').map(tag => tag.trim().toLowerCase()).includes(currentTag.toLowerCase()) : true;
       const matchesSeries = currentSeries ? post.seriesId === currentSeries : true;
 
@@ -112,7 +108,7 @@ export default function BlogPageClient() {
   }
 
   return (
-    <main className="min-h-screen bg-white">
+    <>
       <Navbar
         categories={data.categories}
         currentCategory={currentCategory}
@@ -121,7 +117,7 @@ export default function BlogPageClient() {
         onClearFilters={clearFilters}
       />
       
-      <section className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
+      <main className="px-4 sm:px-6 md:px-8 py-12 md:py-16">
         <div className="flex justify-end mb-4">
           {(currentCategory || currentTag) && (
             <div className="flex items-center gap-4">
@@ -191,7 +187,7 @@ export default function BlogPageClient() {
               onTagClick={handleTagClick}
             />
         )}
-      </section>
-    </main>
+      </main>
+    </>
   )
 }

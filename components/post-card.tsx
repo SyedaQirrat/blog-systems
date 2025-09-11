@@ -20,19 +20,20 @@ export default function PostCard({
   onTagClick,
 }: PostCardProps) {
   const categoryName = getCategoryName(post.category);
+  // Use imageUrl if it exists, otherwise fall back to the image array
+  const imageSrc = post.imageUrl || (post.image && post.image[0]);
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border border-blue-100 flex flex-col h-full">
-      {post.image && post.image.length > 0 && (
+      {/* Render the post image */}
+      {imageSrc && (
         <div className="relative w-full h-48">
-          <Link href={`/post/${post._id}`}>
-              <Image
-                src={post.image[0]}
-                alt={post.title}
-                fill
-                className="object-cover"
-              />
-          </Link>
+          <Image
+            src={imageSrc}
+            alt={post.title}
+            fill
+            className="object-cover"
+          />
         </div>
       )}
       <div className="p-6 flex flex-col flex-grow">

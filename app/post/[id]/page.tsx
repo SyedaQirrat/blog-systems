@@ -5,15 +5,16 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import React from "react"
-import { fetchSingleBlog, deleteblogs, Post, loadBlogData } from "@/lib/data-service"
+import { fetchSingleBlog, deleteblogs, Post, Series, loadBlogData } from "@/lib/data-service"
 import { CommentSection } from "@/components/comment-section";
 import PostCard from "@/components/post-card"
 
 export default function PostDetail({ params }: { params: { id: string } }) {
-  const [post, setPost] = useState<Post | null>(null)
+  const [post, setPost] = useState<Post | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
+  const [seriesTitle, setSeriesTitle] = useState<string | null>(null); // State for the series title
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchPostAndRelated = async () => {
@@ -22,20 +23,31 @@ export default function PostDetail({ params }: { params: { id: string } }) {
         const postData = await fetchSingleBlog(params.id);
         setPost(postData);
 
-        if (postData && postData.tags) {
-          const allPostsData = await loadBlogData();
-          const postTags = typeof postData.tags === 'string' ? postData.tags.split(',').map(tag => tag.trim()) : [];
-          
-          const filteredPosts = allPostsData.posts.filter(p => {
-            if (p._id === postData._id) return false;
-            const pTags = typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()) : [];
-            return pTags.some(tag => postTags.includes(tag));
-          }).slice(0, 4);
-          
-          setRelatedPosts(filteredPosts);
+        // After fetching the post, fetch all blog data to find series title and related posts
+        if (postData) {
+          const allData = await loadBlogData(1, 100); // Fetch all data
+
+          // Find and set the series title if the post belongs to one
+          if (postData.seriesId) {
+            const currentSeries = allData.series.find(s => s._id === postData.seriesId);
+            if (currentSeries) {
+              setSeriesTitle(currentSeries.title);
+            }
+          }
+
+          // Find related posts based on tags
+          if (postData.tags) {
+            const postTags = typeof postData.tags === 'string' ? postData.tags.split(',').map(tag => tag.trim()) : [];
+            const filteredPosts = allData.posts.filter(p => {
+              if (p._id === postData._id) return false;
+              const pTags = typeof p.tags === 'string' ? p.tags.split(',').map(tag => tag.trim()) : [];
+              return pTags.some(tag => postTags.includes(tag));
+            }).slice(0, 4);
+            setRelatedPosts(filteredPosts);
+          }
         }
       } catch (error) {
-        console.error("Error fetching post and related posts:", error);
+        console.error("Error fetching post and related data:", error);
       } finally {
         setLoading(false);
       }
@@ -65,22 +77,33 @@ export default function PostDetail({ params }: { params: { id: string } }) {
     return <div className="min-h-screen bg-white flex items-center justify-center">Post not found</div>;
   }
   
-  const images = post.image;
+  const imageSrc = post.imageUrl || (post.image && post.image[0]);
   const tagsArray = typeof post.tags === 'string'
     ? post.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)
     : [];
   
-  const getAuthorName = () => "Admin"; // Placeholder
-  const getCategoryName = () => post.category; // Placeholder
+  const getAuthorName = () => "Admin";
+  const getCategoryName = () => post.category;
 
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <Link href="/blog" className="text-sm transition-colors mb-4 inline-block hover:opacity-80" style={{ color: "#7ACB59" }}>
-          ← Back to Blog
-        </Link>
+        <div className="flex items-center space-x-4 mb-4">
+            <Link href="/blog" className="text-sm transition-colors hover:opacity-80" style={{ color: "#7ACB59" }}>
+              ← Back to Blog
+            </Link>
+
+            {/* Conditionally render the "Back to Series" link */}
+            {post.seriesId && seriesTitle && (
+              <Link href={`/series/${post.seriesId}`} className="text-sm transition-colors hover:opacity-80" style={{ color: "#0E4772" }}>
+                ← Back to Series: {seriesTitle}
+              </Link>
+            )}
+        </div>
         
         <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: "#0E4772" }}>{post.title}</h1>
+        
+        {/* ... Rest of the component ... */}
         
         <p className="text-lg text-gray-600 mb-6">{post.description}</p>
         
@@ -105,10 +128,10 @@ export default function PostDetail({ params }: { params: { id: string } }) {
           ))}
         </div>
 
-        {images && images.length > 0 && (
+        {imageSrc && (
           <div className="relative w-full aspect-video mb-8">
             <Image
-              src={images[0]} 
+              src={imageSrc} 
               alt={post.title}
               fill
               className="object-cover rounded-lg"

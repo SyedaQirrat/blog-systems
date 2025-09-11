@@ -8,6 +8,7 @@ export interface Post {
   isPublished?: boolean;
   publishedAt?: string;
   image: string[]; // This will hold the URL of the feature image
+  imageUrl?: string; // This will hold the URL of the feature image
   category: string;
   file?: File | null; // This will be used for uploading the new image
   allowComments?: boolean;

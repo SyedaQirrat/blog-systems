@@ -22,9 +22,10 @@ export default function PostCard({
   const categoryName = getCategoryName(post.category);
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group border border-gray-200 flex flex-col h-full">
+    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border border-blue-100 flex flex-col h-full">
+      {/* Render the post image */}
       {post.image && post.image[0] && (
-        <div className="relative w-full h-40">
+        <div className="relative w-full h-48">
           <Image
             src={post.image[0]}
             alt={post.title}
@@ -33,7 +34,7 @@ export default function PostCard({
           />
         </div>
       )}
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="p-6 flex flex-col flex-grow">
         {categoryName && categoryName !== "Uncategorized" && (
           <button
             onClick={() => onCategoryClick(categoryName)}
@@ -42,14 +43,14 @@ export default function PostCard({
             {categoryName}
           </button>
         )}
-        <h3 className="font-bold text-lg text-black mb-2">
+        <h3 className="font-bold text-xl text-black mb-3">
           <Link href={`/post/${post._id}`}>{post.title}</Link>
         </h3>
         <p className="text-sm text-gray-600 flex-grow mb-4">
           {post.description}
         </p>
-        <div className="mt-auto">
-          <span className="text-xs text-gray-500">
+        <div className="mt-auto text-xs text-gray-500">
+          <span>
             {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'Draft'}
           </span>
         </div>

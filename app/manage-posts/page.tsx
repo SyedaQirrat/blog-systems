@@ -76,7 +76,6 @@ export default function ManagePostsPage() {
 
   return (
     <>
-      <Header />
       <div className="container mx-auto max-w-7xl py-12">
         <Card>
           <CardContent className="p-0">

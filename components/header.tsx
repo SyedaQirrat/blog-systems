@@ -84,10 +84,6 @@ export function Header() {
              <Link href="/manage-posts" className="text-sm font-medium text-gray-600 hover:text-primary-dark transition-colors">
                 Manage Posts
             </Link>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-primary-accent ring-2 ring-white" />
-            </Button>
           </div>
         </div>
       </div>

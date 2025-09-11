@@ -43,6 +43,7 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
+  const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null);
   
   const postId = params.params?.[0] && params.params[0] !== "new" ? params.params[0] : null;
   const isEditMode = !!postId;
@@ -91,13 +92,25 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
     fetchData();
   }, [postId, isEditMode, form]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFeaturedImageFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
+
+    const postData = {
+        ...values,
+        file: featuredImageFile,
+    };
+
     try {
       if (isEditMode && postId) {
-        await updateBlog({ _id: postId, ...values });
+        await updateBlog({ _id: postId, ...postData });
       } else {
-        await createBlog(values);
+        await createBlog(postData);
       }
       router.push("/manage-posts");
     } catch (error) {
@@ -153,6 +166,17 @@ export default function ManagePostPage({ params }: { params: { params?: string[]
                     </FormItem>
                   )}
                 />
+                <FormItem>
+                  <FormLabel>Feature Image</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
                 <FormField
                   control={form.control}
                   name="tags"

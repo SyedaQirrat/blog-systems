@@ -4,12 +4,12 @@ export interface Post {
   content: string;
   description: string;
   tags: string;
-  seriesId: string; // Changed from optional to required
+  seriesId: string;
   isPublished?: boolean;
   publishedAt?: string;
-  image: string[];
+  image: string[]; // This will hold the URL of the feature image
   category: string;
-  file?: File | null;
+  file?: File | null; // This will be used for uploading the new image
   allowComments?: boolean;
   authorId?: string;
 }

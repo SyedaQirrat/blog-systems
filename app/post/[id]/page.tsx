@@ -6,7 +6,6 @@ import Link from "next/link"
 import Image from "next/image"
 import React from "react"
 import { fetchSingleBlog, deleteblogs, Post, loadBlogData } from "@/lib/data-service"
-import { Button } from "@/components/ui/button"
 import { CommentSection } from "@/components/comment-section";
 import PostCard from "@/components/post-card"
 
@@ -76,76 +75,70 @@ export default function PostDetail({ params }: { params: { id: string } }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="text-white py-8 bg-[#0E4772]">
-        <div className="max-w-4xl mx-auto px-6">
-          <Link href="/blog" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6">
-            ← Back to Blog
-          </Link>
-          <h1 className="text-4xl md:text-6xl font-thin mb-6 text-white">{post.title}</h1>
-
-          <div className="flex flex-wrap items-center gap-2 text-sm text-[#7ACB59]">
-            {post.isPublished ? (
-              <span className="text-[#7ACB59]">• Published</span>
-            ) : (
-              <span className="text-red-500">• Draft</span>
-            )}
-            {post.category && (
-              <span className="text-[#7ACB59]">• {post.category}</span>
-            )}
-          </div>
-        </div>
-      </div>
-
       <div className="max-w-4xl mx-auto px-6 py-12">
-        {images && images.length > 0 && (
-          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {images.map((imgSrc, index) => (
-              <div key={index} className="relative w-full aspect-[4/3]">
-                <Image
-                  src={imgSrc}
-                  alt={`${post.title} image ${index + 1}`}
-                  fill
-                  className="object-cover rounded-lg"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="prose prose-lg max-w-none mb-12" dangerouslySetInnerHTML={{ __html: post.content }} />
+        <Link href="/blog" className="text-sm transition-colors mb-4 inline-block hover:opacity-80" style={{ color: "#7ACB59" }}>
+          ← Back to Blog
+        </Link>
         
-        <div className="flex flex-wrap gap-2 mb-12">
-          {tagsArray.map((tag, index) => (
+        <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: "#0E4772" }}>{post.title}</h1>
+        
+        <p className="text-lg text-gray-600 mb-6">{post.description}</p>
+        
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 mb-8 border-t border-b py-4">
+          <span>
+            Published on {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : 'N/A'}
+          </span>
+          <span className="text-gray-300">|</span>
+          <span>By {getAuthorName()}</span>
+          <span className="text-gray-300">|</span>
+          <span className="capitalize">{getCategoryName()}</span>
+           <span className="text-gray-300">|</span>
+           {tagsArray.map((tag, index) => (
             <button
               key={index}
               onClick={() => router.push(`/blog?tag=${tag}`)}
-              className="px-4 py-2 bg-gray-100 hover:bg-[#7ACB59] text-[#0E4772] hover:text-white rounded-full text-sm transition-colors"
+              className="px-3 py-1 text-white rounded-full text-xs transition-colors hover:opacity-90"
+              style={{ backgroundColor: "#7ACB59" }}
             >
               #{tag}
             </button>
           ))}
         </div>
 
-        <div className="flex justify-center gap-4 text-center">
+        {images && images.length > 0 && (
+          <div className="relative w-full aspect-video mb-8">
+            <Image
+              src={images[0]} 
+              alt={post.title}
+              fill
+              className="object-cover rounded-lg"
+            />
+          </div>
+        )}
+
+        <div className="prose prose-lg max-w-none mb-8 text-gray-800" dangerouslySetInnerHTML={{ __html: post.content }} />
+        
+        <div className="flex justify-center gap-4 text-center border-t pt-8">
           <Link
             href={`/manage-post/${post._id}`}
-            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg bg-[#7ACB59]"
+            className="inline-block px-6 py-2 text-white transition-colors rounded-md hover:opacity-90"
+            style={{ backgroundColor: "#0E4772" }}
           >
             Edit Post
           </Link>
           <button
             onClick={handleDeletePost}
-            className="inline-block px-8 py-3 text-white hover:opacity-90 transition-opacity rounded-lg bg-[#ff4d4f]"
+            className="inline-block px-6 py-2 text-white bg-red-600 hover:bg-red-700 transition-colors rounded-md"
           >
             Delete Post
           </button>
         </div>
 
-        <CommentSection blogId={post._id} />
+        {post.allowComments && <CommentSection blogId={post._id} />}
 
         {relatedPosts.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-3xl font-bold mb-6 text-gray-900">Related Posts</h2>
+          <section className="mt-12 border-t pt-8">
+            <h2 className="text-2xl font-bold mb-6" style={{ color: "#0E4772" }}>Related Posts</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {relatedPosts.map(relatedPost => (
                 <PostCard

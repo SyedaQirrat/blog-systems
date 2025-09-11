@@ -23,15 +23,16 @@ export default function PostCard({
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 border border-blue-100 flex flex-col h-full">
-      {/* Render the post image */}
-      {post.image && post.image[0] && (
+      {post.image && post.image.length > 0 && (
         <div className="relative w-full h-48">
-          <Image
-            src={post.image[0]}
-            alt={post.title}
-            fill
-            className="object-cover"
-          />
+          <Link href={`/post/${post._id}`}>
+              <Image
+                src={post.image[0]}
+                alt={post.title}
+                fill
+                className="object-cover"
+              />
+          </Link>
         </div>
       )}
       <div className="p-6 flex flex-col flex-grow">

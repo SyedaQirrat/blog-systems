@@ -38,14 +38,15 @@ const formSchema = z.object({
   content: z.string().min(20, { message: "Content must be at least 20 characters." }),
 });
 
-export default function ManagePostPage({ params }: { params: { id: string } }) {
+export default function ManagePostPage({ params }: { params: { params?: string[] } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [series, setSeries] = useState<Series[]>([]);
+  const [featuredImageFile, setFeaturedImageFile] = useState<File | null>(null);
   
-  const { id: postId } = params;
-  const isEditMode = postId !== "new";
+  const postId = params.params?.[0] && params.params[0] !== "new" ? params.params[0] : null;
+  const isEditMode = !!postId;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,7 +54,7 @@ export default function ManagePostPage({ params }: { params: { id: string } }) {
       title: "",
       description: "",
       tags: "",
-      isPublished: true,
+      isPublished: false,
       allowComments: true,
       seriesId: "",
       category: "",
@@ -69,7 +70,7 @@ export default function ManagePostPage({ params }: { params: { id: string } }) {
         setCategories(blogData.categories);
         setSeries(blogData.series);
 
-        if (isEditMode) {
+        if (isEditMode && postId) {
           const post = await fetchSingleBlog(postId);
           form.reset({
             title: post.title,
@@ -91,13 +92,25 @@ export default function ManagePostPage({ params }: { params: { id: string } }) {
     fetchData();
   }, [postId, isEditMode, form]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFeaturedImageFile(e.target.files[0]);
+    }
+  };
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
+
+    const postData = {
+        ...values,
+        file: featuredImageFile,
+    };
+
     try {
-      if (isEditMode) {
-        await updateBlog({ _id: postId, ...values });
+      if (isEditMode && postId) {
+        await updateBlog({ _id: postId, ...postData });
       } else {
-        await createBlog(values);
+        await createBlog(postData);
       }
       router.push("/manage-posts");
     } catch (error) {
@@ -108,168 +121,180 @@ export default function ManagePostPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <>
-    <div className="container mx-auto max-w-4xl py-12">
-      <div className="mb-8">
-        <Button onClick={() => router.back()} variant="link" className="p-0">
-          ← Back to Posts
-        </Button>
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mt-2">
-          {isEditMode ? "Edit Post" : "Create New Post"}
-        </h1>
+    <div className="min-h-screen bg-white">
+      <div className="text-white py-8" style={{ backgroundColor: "#0E4772" }}>
+        <div className="max-w-4xl mx-auto px-6">
+          <Button onClick={() => router.back()} variant="link" className="inline-flex items-center text-[#7ACB59] hover:text-green-200 transition-colors mb-6 p-0">
+            ← Back
+          </Button>
+          <h1 className="text-4xl md:text-6xl font-thin text-white">
+            {isEditMode ? "Edit Post" : "Create New Post"}
+          </h1>
+        </div>
       </div>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <Card className="p-6 sm:p-8">
-            <CardHeader className="p-0 mb-6">
-              <CardTitle className="text-2xl">Post Details</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Post title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Short description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tags"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tags (comma-separated)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., tech, productivity" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="seriesId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Series</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+      <div className="container mx-auto max-w-4xl py-12">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            <Card className="p-6 space-y-6">
+              <CardHeader className="p-0">
+                <CardTitle className="text-xl">Post Details</CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 space-y-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a series for this post" />
-                        </SelectTrigger>
+                        <Input placeholder="Post title" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {series.map((s) => (
-                          <SelectItem key={s._id} value={s._id}>
-                            {s.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
+                        <Input placeholder="Short description" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.categoryId} value={category.name}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <div className="text-black">
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormItem>
+                  <FormLabel>Feature Image</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags (comma-separated)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., tech, productivity" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="seriesId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Series</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a series for this post" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {series.map((s) => (
+                            <SelectItem key={s._id} value={s._id}>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.categoryId} value={category.name}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Content</FormLabel>
+                      <FormControl>
                         <CKEditorComponent value={field.value} onChange={field.onChange} />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex items-center space-x-4 pt-4">
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          id="isPublished"
-                        />
                       </FormControl>
-                      <FormLabel htmlFor="isPublished" className="font-normal cursor-pointer">Publish</FormLabel>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="allowComments"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          id="allowComments"
-                        />
-                      </FormControl>
-                      <FormLabel htmlFor="allowComments" className="font-normal cursor-pointer">Allow Comments</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <Button type="submit" disabled={loading} className="w-full sm:w-auto bg-primary-accent hover:bg-primary-accent/90">
-                {loading ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Post" : "Create Post")}
-              </Button>
-            </CardContent>
-          </Card>
-        </form>
-      </Form>
+                <div className="flex items-center space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Publish</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="allowComments"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Allow Comments</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type="submit" disabled={loading} style={{ backgroundColor: "#7ACB59" }}>
+                  {loading ? (isEditMode ? "Updating..." : "Creating...") : (isEditMode ? "Update Post" : "Create Post")}
+                </Button>
+              </CardContent>
+            </Card>
+          </form>
+        </Form>
+      </div>
     </div>
-    </>
   );
 }

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { getPostById } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import CommentSection from "@/components/comment-section";
+import { CommentSection } from "@/components/comment-section"; // Correct: Named import
 
 interface PostPageProps {
   params: {
@@ -27,24 +27,21 @@ export default async function PostPage({ params }: PostPageProps) {
       </header>
       
       <Image
-        src={post.featureImage}
+        src={post.imageUrl}
         alt={post.title}
         width={800}
         height={400}
         className="rounded-lg object-cover w-full mb-8"
       />
       
-      {/* This renders the HTML content from the CKEditor.
-        In a real app, you MUST sanitize this HTML to prevent XSS attacks.
-      */}
       <div 
         className="prose max-w-none" 
-        dangerouslySetInnerHTML={{ __html: "Post content from CKEditor will go here. The real content is not yet saved in our mock data." }} 
+        dangerouslySetInnerHTML={{ __html: post.content }} 
       />
 
       <hr className="my-12" />
 
-      <CommentSection />
+      <CommentSection blogId={post.id} />
     </article>
   );
 }

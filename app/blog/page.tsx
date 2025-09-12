@@ -1,4 +1,4 @@
-import { PostCard } from "@/components/post-card";
+import PostCard from "@/components/post-card"; // Correct: Default import
 import { getPublishedPosts } from "@/lib/data";
 
 export default async function BlogPage() {

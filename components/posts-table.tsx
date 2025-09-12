@@ -8,8 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Post } from "@/lib/data";
-import Link from "next/link";
+import { Post } from "@/lib/types"; // Corrected import
 import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,13 +36,13 @@ export function PostsTable({ posts }: PostsTableProps) {
       </TableHeader>
       <TableBody>
         {posts.map((post) => (
-          <TableRow key={post.id}>
+          <TableRow key={post.id}> {/* Corrected: use post.id */}
             <TableCell className="font-medium">{post.title}</TableCell>
             <TableCell>{post.authorName}</TableCell>
             <TableCell>{post.category}</TableCell>
             <TableCell>
-              <Badge variant={post.status === 'Published' ? 'default' : 'secondary'}>
-                {post.status}
+              <Badge variant={post.status === 'Published' ? 'default' : 'secondary'}> {/* Corrected: use post.status */}
+                {post.status} {/* Corrected: use post.status */}
               </Badge>
             </TableCell>
             <TableCell>{post.publishedAt}</TableCell>

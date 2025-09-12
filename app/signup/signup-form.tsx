@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +15,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function SignupForm() {
-  // This hook needs to be in a client component.
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const role = searchParams.get('role') || 'Author/Writer';
@@ -55,7 +53,7 @@ export default function SignupForm() {
             Sign in
           </Link>
         </div>
-      </Footer>
+      </CardFooter> {/* <-- This was the missing closing tag */}
     </Card>
   );
 }

@@ -1,61 +1,62 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-import { Comment, fetchCommentsForBlog, createComment } from "@/lib/data-service";
-import { IndividualComment } from "./individual-comment";
+import IndividualComment from "./individual-comment";
 import { CommentForm } from "./comment-form";
+import { Comment } from "@/lib/types"; // Corrected import from lib/types
 
 interface CommentSectionProps {
   blogId: string;
 }
 
+// Mock function
+const fetchCommentsForBlog = async (blogId: string): Promise<Comment[]> => {
+    console.log(`Fetching comments for blog ID: ${blogId}`);
+    return [
+        { id: "1", authorName: "Alice", authorEmail: "alice@example.com", content: "This was an incredibly insightful read. Thank you!", postTitle: "Mock Post", postId: blogId, submittedAt: "2025-09-11", status: "Approved" },
+        { id: "3", authorName: "Charlie", authorEmail: "charlie@example.com", content: "Looking forward to part 2 of this series!", postTitle: "Mock Post", postId: blogId, submittedAt: "2025-09-09", status: "Approved" },
+    ];
+};
+
 export function CommentSection({ blogId }: CommentSectionProps) {
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loadingComments, setLoadingComments] = useState(true);
-  const [submittingComment, setSubmittingComment] = useState(false);
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [loading, setLoading] = useState(false);
+    
+    useEffect(() => {
+        const loadComments = async () => {
+            const fetchedComments = await fetchCommentsForBlog(blogId);
+            setComments(fetchedComments);
+        };
+        loadComments();
+    }, [blogId]);
 
-  useEffect(() => {
-    const loadComments = async () => {
-      setLoadingComments(true);
-      try {
-        const fetchedComments = await fetchCommentsForBlog(blogId);
-        setComments(fetchedComments);
-      } catch (error) {
-        console.error("Failed to load comments:", error);
-      } finally {
-        setLoadingComments(false);
-      }
+    const handleCommentSubmit = (commentData: { authorName: string; authorEmail: string; content: string }) => {
+        console.log("New comment submitted:", commentData);
+        const newComment: Comment = {
+            id: Math.random().toString(),
+            postId: blogId,
+            postTitle: "Mock Post", // In a real app, you might pass the title down or fetch it
+            submittedAt: new Date().toISOString(),
+            status: "Pending", // New comments are pending approval
+            ...commentData
+        };
+        setComments(prevComments => [newComment, ...prevComments]);
     };
-    loadComments();
-  }, [blogId]);
 
-  const handleSubmitNewComment = async (newCommentData: Omit<Comment, "_id" | "createdAt">) => {
-    setSubmittingComment(true);
-    try {
-      const createdComment = await createComment(newCommentData);
-      setComments((prevComments) => [createdComment, ...prevComments]); // Add new comment to top
-    } catch (error) {
-      console.error("Failed to submit comment:", error);
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
-
-  return (
-    <div className="mt-12">
-      <h2 className="text-3xl font-bold mb-6 text-gray-900">Comments</h2>
-      
-      {loadingComments ? (
-        <div className="text-center text-gray-600">Loading comments...</div>
-      ) : comments.length === 0 ? (
-        <div className="text-center text-gray-600">No comments yet. Be the first to comment!</div>
-      ) : (
-        <div className="space-y-4">
-          {comments.map((comment) => (
-            <IndividualComment key={comment._id} comment={comment} />
-          ))}
-        </div>
-      )}
-
-      <CommentForm blogId={blogId} onSubmitComment={handleSubmitNewComment} loading={submittingComment} />
-    </div>
-  );
-}
+    return (
+        <section className="py-8">
+            <h2 className="text-2xl font-bold mb-6">Comments ({comments.length})</h2>
+            <div className="space-y-6">
+                {comments.map(comment => (
+                    <IndividualComment key={comment.id} comment={comment} />
+                ))}
+            </div>
+            <hr className="my-8" />
+            <CommentForm 
+                blogId={blogId}
+                onSubmitComment={handleCommentSubmit}
+                loading={loading}
+            />
+        </section>
+    );
+};

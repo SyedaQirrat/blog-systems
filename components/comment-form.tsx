@@ -1,61 +1,55 @@
-import React, { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Comment } from "@/lib/data-service";
+"use client";
 
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+// Define the expected props for the form
 interface CommentFormProps {
   blogId: string;
-  onSubmitComment: (comment: Omit<Comment, "_id" | "createdAt">) => Promise<void>;
+  onSubmitComment: (commentData: { authorName: string; authorEmail: string; content: string }) => void;
   loading: boolean;
 }
 
-export function CommentForm({ blogId, onSubmitComment, loading }: CommentFormProps) {
+export const CommentForm = ({ blogId, onSubmitComment, loading }: CommentFormProps) => {
+  const [content, setContent] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [authorEmail, setAuthorEmail] = useState("");
-  const [content, setContent] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!authorName || !authorEmail || !content) {
-      alert("Please fill in all fields."); // Replace with a proper toast/modal later
+    if (!content || !authorName || !authorEmail) {
+      alert("Please fill out all fields.");
       return;
     }
-
-    await onSubmitComment({ blogId, authorName, authorEmail, content });
+    onSubmitComment({ content, authorName, authorEmail });
+    setContent("");
     setAuthorName("");
     setAuthorEmail("");
-    setContent("");
   };
 
   return (
-    <div className="mt-8 p-6 border rounded-lg bg-gray-50">
-      <h3 className="text-2xl font-bold mb-4 text-gray-900">Leave a Comment</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          placeholder="Your Name"
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          required
-        />
-        <Input
-          type="email"
-          placeholder="Your Email"
-          value={authorEmail}
-          onChange={(e) => setAuthorEmail(e.target.value)}
-          required
-        />
-        <Textarea
-          placeholder="Write your comment here..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={4}
-          required
-        />
-        <Button type="submit" disabled={loading} style={{ backgroundColor: "#7ACB59" }}>
-          {loading ? "Submitting..." : "Submit Comment"}
-        </Button>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <h3 className="text-xl font-semibold">Leave a Comment</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Name</Label>
+          <Input id="name" value={authorName} onChange={(e) => setAuthorName(e.target.value)} placeholder="Your name" required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" value={authorEmail} onChange={(e) => setAuthorEmail(e.target.value)} placeholder="Your email" required />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="comment">Comment</Label>
+        <Textarea id="comment" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your comment here..." required />
+      </div>
+      <Button type="submit" disabled={loading}>
+        {loading ? "Submitting..." : "Submit Comment"}
+      </Button>
+    </form>
   );
-}
+};

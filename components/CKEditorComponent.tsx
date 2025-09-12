@@ -18,7 +18,7 @@ function CKEditorComponent({ value, onChange }: CKEditorComponentProps) {
     const [editorLoaded, setEditorLoaded] = useState(false);
 
     useEffect(() => {
-        // Dynamically import the editor. This is necessary to prevent errors with Next.js SSR.
+        // Dynamically import the editor.
         editorRef.current = {
             CKEditor: require('@ckeditor/ckeditor5-react').CKEditor,
             ClassicEditor: require('@ckeditor/ckeditor5-build-classic'),
@@ -32,29 +32,48 @@ function CKEditorComponent({ value, onChange }: CKEditorComponentProps) {
 
     const { CKEditor, ClassicEditor } = editorRef.current;
 
+    // The Base64UploadAdapter class handles converting image files to Base64 strings.
+    class Base64UploadAdapter {
+        private loader: any;
+        constructor(loader: any) {
+            this.loader = loader;
+        }
+        upload() {
+            return this.loader.file.then(
+                (file: File) =>
+                    new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                            resolve({ default: reader.result });
+                        };
+                        reader.onerror = (error) => {
+                            reject(error);
+                        };
+                        reader.readAsDataURL(file);
+                    })
+            );
+        }
+    }
+
+    function MyCustomUploadAdapterPlugin(editor: any) {
+        editor.plugins.get('FileRepository').createUploadAdapter = (loader: any) => {
+            return new Base64UploadAdapter(loader);
+        };
+    }
+
     return (
         <div className="prose max-w-full text-black">
             <CKEditor
                 editor={ClassicEditor}
                 data={value}
                 config={{
-                    // The toolbar now includes the 'imageUpload' button
+                    extraPlugins: [MyCustomUploadAdapterPlugin],
                     toolbar: [
                         'heading', '|',
                         'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
                         'outdent', 'indent', '|',
-                        'imageUpload', // This button requires a correctly configured upload adapter
+                        'imageUpload',
                         'blockQuote', 'insertTable', 'mediaEmbed', 'undo', 'redo'
-                    ],
-                    // This section is crucial for enabling image uploads without a backend connector.
-                    // It uses a Base64 adapter to embed images directly in the content.
-                    extraPlugins: [
-                        function (editor: any) {
-                            // This function adds the Base64UploadAdapter to the editor's plugin registry.
-                            editor.plugins.get('FileRepository').createUploadAdapter = (loader: any) => {
-                                return new Base64UploadAdapter(loader);
-                            };
-                        },
                     ],
                 }}
                 onChange={(event: any, editor: any) => {
@@ -64,31 +83,6 @@ function CKEditorComponent({ value, onChange }: CKEditorComponentProps) {
             />
         </div>
     );
-}
-
-// The Base64UploadAdapter class handles the logic for converting an image file to a Base64 string.
-class Base64UploadAdapter {
-    private loader: any;
-
-    constructor(loader: any) {
-        this.loader = loader;
-    }
-
-    upload() {
-        return this.loader.file.then(
-            (file: File) =>
-                new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        resolve({ default: reader.result });
-                    };
-                    reader.onerror = (error) => {
-                        reject(error);
-                    };
-                    reader.readAsDataURL(file);
-                })
-        );
-    }
 }
 
 export default CKEditorComponent;

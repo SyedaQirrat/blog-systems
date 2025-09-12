@@ -1,31 +1,69 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getMockUser } from "@/lib/auth";
-import { getPostsForUser } from "@/lib/data";
-import { PostsTable } from "@/components/posts-table";
+import { Post } from "@/lib/data";
 import Link from "next/link";
-import { PlusCircle } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
-export default async function ManagePostsPage() {
-  const user = await getMockUser();
-  // We'll pass a dummy userId for the author role for now
-  const posts = await getPostsForUser(user.role, "user-1");
+interface PostsTableProps {
+  posts: Post[];
+}
 
+export function PostsTable({ posts }: PostsTableProps) {
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold tracking-tight">
-          {user.role === 'Author/Writer' ? 'My Posts' : 'Manage Posts'}
-        </h1>
-        <Link href="/manage-posts/new">
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create New Post
-          </Button>
-        </Link>
-      </div>
-      <div className="rounded-lg border shadow-sm">
-         <PostsTable posts={posts} />
-      </div>
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Title</TableHead>
+          <TableHead>Author</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Published On</TableHead>
+          <TableHead><span className="sr-only">Actions</span></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {posts.map((post) => (
+          <TableRow key={post.id}>
+            <TableCell className="font-medium">{post.title}</TableCell>
+            <TableCell>{post.authorName}</TableCell>
+            <TableCell>{post.category}</TableCell>
+            <TableCell>
+              <Badge variant={post.status === 'Published' ? 'default' : 'secondary'}>
+                {post.status}
+              </Badge>
+            </TableCell>
+            <TableCell>{post.publishedAt}</TableCell>
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-haspopup="true" size="icon" variant="ghost">
+                    <MoreHorizontal className="h-4 w-4" />
+                    <span className="sr-only">Toggle menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

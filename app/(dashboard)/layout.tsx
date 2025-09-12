@@ -1,8 +1,8 @@
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { getMockUser } from "@/lib/auth";
 import React from "react";
+import { DashboardHeader } from "@/components/dashboard-header"; // Import the new header
 
-// This layout will be applied to all pages inside the (dashboard) group
 export default async function DashboardLayout({
   children,
 }: {
@@ -11,11 +11,14 @@ export default async function DashboardLayout({
   const user = await getMockUser();
 
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full bg-white">
       <DashboardSidebar role={user.role} />
-      <div className="flex-1">
-        {/* We can add a dashboard-specific header here later */}
-        <main className="p-4 sm:p-6">{children}</main>
+      <div className="flex flex-col flex-1 sm:gap-4 sm:py-4 sm:pl-14">
+        {/* Add the new header here */}
+        <DashboardHeader />
+        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+          {children}
+        </main>
       </div>
     </div>
   );

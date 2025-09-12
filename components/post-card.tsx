@@ -10,6 +10,10 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  // Fallback for author name
+  const authorName = post.authorName || "Anonymous";
+  const authorInitial = authorName.charAt(0) || "A";
+
   return (
     <Link href={`/post/${post.id}`}>
       <Card className="hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
@@ -28,11 +32,11 @@ export default function PostCard({ post }: PostCardProps) {
         </CardContent>
         <CardFooter className="flex items-center gap-2 pt-4">
           <Avatar className="h-8 w-8">
-            <AvatarImage src="/placeholder-user.jpg" alt={post.authorName} />
-            <AvatarFallback>{post.authorName.charAt(0)}</AvatarFallback>
+            <AvatarImage src="/placeholder-user.jpg" alt={authorName} />
+            <AvatarFallback>{authorInitial}</AvatarFallback>
           </Avatar>
           <div>
-            <p className="text-sm font-medium">{post.authorName}</p>
+            <p className="text-sm font-medium">{authorName}</p>
             <p className="text-xs text-muted-foreground">{post.publishedAt}</p>
           </div>
         </CardFooter>

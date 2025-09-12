@@ -137,3 +137,11 @@
     background-color: #fff;
   }
 }
+.card-table .ant-table-wrapper, .card-table .ant-table {
+    background: white !important;
+}
+
+/* Specific override for Shadcn UI table in dark mode */
+.dark .card-table table {
+    background-color: hsl(var(--card));
+}

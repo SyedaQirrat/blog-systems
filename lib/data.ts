@@ -142,3 +142,33 @@ const allComments: Comment[] = [
 export const getComments = async (): Promise<Comment[]> => {
   return allComments;
 };
+export interface Post {
+  id: string;
+  title: string;
+  authorName: string;
+  authorId: string;
+  category: string;
+  status: "Published" | "Draft" | "Pending Approval";
+  publishedAt: string;
+  featureImage: string; // 1. Add this property
+}
+
+// 2. Update the sample data with image URLs
+const allPosts: Post[] = [
+  { id: "1", title: "The Principles of Sustainable Design", authorName: "Jane Doe", authorId: "user-1", category: "Design", status: "Published", publishedAt: "2025-09-10", featureImage: "/sustainable-design.png" },
+  { id: "2", title: "Mastering Color Theory in Branding", authorName: "John Smith", authorId: "user-2", category: "Creative", status: "Published", publishedAt: "2025-09-08", featureImage: "/color-theory-brand.png" },
+  { id: "3", title: "A Guide to User Experience Design", authorName: "Jane Doe", authorId: "user-1", category: "Guides", status: "Pending Approval", publishedAt: "-", featureImage: "/user-experience-design.png" },
+  { id: "4", title: "Minimalism in Web Development", authorName: "Alex Ray", authorId: "user-3", category: "Development", status: "Draft", publishedAt: "-", featureImage: "/minimalist-design-principles.png" },
+];
+
+// Add a new function to get only published posts
+export const getPublishedPosts = async (): Promise<Post[]> => {
+  return allPosts.filter(post => post.status === "Published");
+};
+
+// Add a new function to get a single post by its ID
+export const getPostById = async (id: string): Promise<Post | undefined> => {
+    return allPosts.find(post => post.id === id);
+};
+
+// ... keep the rest of the file the same

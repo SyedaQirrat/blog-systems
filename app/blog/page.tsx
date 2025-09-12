@@ -1,10 +1,17 @@
-import { Suspense } from 'react';
-import BlogPageClient from './BlogPageClient';
+import { PostCard } from "@/components/post-card";
+import { getPublishedPosts } from "@/lib/data";
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const posts = await getPublishedPosts();
+
   return (
-    <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
-      <BlogPageClient />
-    </Suspense>
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold text-center mb-8">The SSTRACK Blog</h1>
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </div>
+    </main>
   );
 }

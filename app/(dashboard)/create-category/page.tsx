@@ -1,41 +1,19 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getCategories } from "@/lib/data";
-import { AddCategoryForm } from "./add-category-form";
 import { CategoriesTable } from "./categories-table";
+import { AddCategoryDialog } from "./add-category-dialog";
 
 export default async function CreateCategoryPage() {
   const categories = await getCategories();
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Create Category</CardTitle>
-            <CardDescription>
-              Add a new category to organize your blog posts.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <AddCategoryForm />
-          </CardContent>
-        </Card>
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-3xl font-bold tracking-tight">Manage Categories</h1>
+        {/* The form is now in a pop-up dialog */}
+        <AddCategoryDialog />
       </div>
-      <div>
-        <Card>
-           <CardHeader>
-            <CardTitle>Existing Categories</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CategoriesTable categories={categories} />
-          </CardContent>
-        </Card>
+      <div className="rounded-lg border shadow-sm">
+        <CategoriesTable categories={categories} />
       </div>
     </div>
   );

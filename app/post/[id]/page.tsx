@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { getPostById } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
-import { CommentSection } from "@/components/comment-section"; // Correct: Named import
+import { CommentSection } from "@/components/comment-section";
 
+// Define the interface for the page props
 interface PostPageProps {
   params: {
     id: string;
@@ -26,16 +27,18 @@ export default async function PostPage({ params }: PostPageProps) {
         <Badge className="mt-2">{post.category}</Badge>
       </header>
       
-      <Image
-        src={post.imageUrl}
-        alt={post.title}
-        width={800}
-        height={400}
-        className="rounded-lg object-cover w-full mb-8"
-      />
+      {post.imageUrl && (
+        <Image
+          src={post.imageUrl}
+          alt={post.title}
+          width={800}
+          height={400}
+          className="rounded-lg object-cover w-full mb-8"
+        />
+      )}
       
       <div 
-        className="prose max-w-none" 
+        className="prose prose-lg dark:prose-invert max-w-none" 
         dangerouslySetInnerHTML={{ __html: post.content }} 
       />
 

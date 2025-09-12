@@ -96,7 +96,7 @@ export default function PostDetail({ params }: { params: { id: string } }) {
             {/* Conditionally render the "Back to Series" link */}
             {post.seriesId && seriesTitle && (
               <Link href={`/series/${post.seriesId}`} className="text-sm transition-colors hover:opacity-80" style={{ color: "#0E4772" }}>
-                ← Back to Series: {seriesTitle}
+                ← Back to  {seriesTitle} 
               </Link>
             )}
         </div>

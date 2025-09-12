@@ -1,19 +1,19 @@
-// This file will hold all our common data structures.
+// This file is the single source of truth for our data structures.
 
 export interface Post {
-  id: string; // Using simple 'id' for consistency
+  id: string; // The primary identifier for a post.
   title: string;
-  content: string;
+  content: string; 
   description: string;
   tags: string;
   seriesId: string;
   status: "Published" | "Draft" | "Pending Approval";
   publishedAt: string;
-  imageUrl: string; // Unified image property
+  imageUrl: string; // The URL for the post's feature image.
   category: string;
   allowComments: boolean;
   authorId: string;
   authorName: string;
 }
 
-// You can add other types like User, Category, etc., here as well.
+// Add other shared types like User, Category, etc. here in the future.

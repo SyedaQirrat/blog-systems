@@ -53,3 +53,12 @@ export interface Comment {
   content: string;
   createdAt: string;
 }
+
+// V V V ADDED USER INTERFACE V V V
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: "Admin" | "Editor" | "Author/Writer";
+  posts: number;
+}

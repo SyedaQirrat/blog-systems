@@ -24,7 +24,7 @@ export const inviteUser = async (email: string, role: string): Promise<User> => 
     return newUser;
 };
 
-// Sample category data
+// Sample category data (Using the simpler Category type from types.ts)
 const allCategories: Category[] = [
   { categoryId: "1", name: "Guides" },
   { categoryId: "2", name: "Creative Content" },
@@ -36,7 +36,7 @@ export const getCategories = async (): Promise<Category[]> => {
   return allCategories;
 };
 
-// ... (createCategory and other functions remain the same)
+// ... (createCategory remains the same but would create a Category type object)
 
 // Sample series data
 const allSeries: Series[] = [
@@ -60,7 +60,7 @@ export const getComments = async (): Promise<Comment[]> => {
   return allComments;
 };
 
-// Corrected sample data with all required properties from the Post type in types.ts
+// Corrected sample data with all required properties
 const allPosts: Post[] = [
   { id: "1", _id: "1", title: "The Principles of Sustainable Design", authorName: "Jane Doe", authorId: "user-1", category: "Design", status: "Published", publishedAt: "2025-09-10", imageUrl: "/sustainable-design.png", image: ["/sustainable-design.png"], content: "<p>Content for sustainable design...</p>", description: "A look into sustainable design.", tags: "design, sustainable", seriesId: "1", allowComments: true },
   { id: "2", _id: "2", title: "Mastering Color Theory in Branding", authorName: "John Smith", authorId: "user-2", category: "Creative", status: "Published", publishedAt: "2025-09-08", imageUrl: "/color-theory-brand.png", image: ["/color-theory-brand.png"], content: "<p>Content for color theory...</p>", description: "Understanding color in branding.", tags: "color, branding", seriesId: "2", allowComments: true },

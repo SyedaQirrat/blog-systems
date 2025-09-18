@@ -46,6 +46,7 @@ export interface BlogData {
 }
 
 export interface Comment {
+  id: string; // Add this line for frontend consistency
   _id: string;
   blogId: string;
   authorName: string;
@@ -53,7 +54,6 @@ export interface Comment {
   content: string;
   createdAt: string;
 }
-
 // V V V ADDED USER INTERFACE V V V
 export interface User {
   id: string;

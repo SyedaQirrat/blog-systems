@@ -24,7 +24,7 @@ export const inviteUser = async (email: string, role: string): Promise<User> => 
     return newUser;
 };
 
-// Sample category data (Using the simpler Category type from types.ts)
+// Sample category data
 const allCategories: Category[] = [
   { categoryId: "1", name: "Guides" },
   { categoryId: "2", name: "Creative Content" },
@@ -36,8 +36,6 @@ export const getCategories = async (): Promise<Category[]> => {
   return allCategories;
 };
 
-// ... (createCategory remains the same but would create a Category type object)
-
 // Sample series data
 const allSeries: Series[] = [
   { _id: "1", title: "Sustainable Design", description: "A 3-part series on eco-friendly design principles.", imageUrl: "", blogsId: [] },
@@ -48,16 +46,15 @@ export const getSeries = async (): Promise<Series[]> => {
   return allSeries;
 };
 
-// ... (createSeries remains the same)
-
-// Sample comment data
+// CORRECTED: This array now includes the 'id' property
 const allComments: Comment[] = [
-  { _id: "1", authorName: "Alice", authorEmail: "alice@example.com", content: "This was an incredibly insightful read. Thank you!", blogId: "1", createdAt: "2025-09-11" },
-  { _id: "2", authorName: "Bob", authorEmail: "bob@example.com", content: "Great article, but I have a question about the color palette choices.", blogId: "2", createdAt: "2025-09-10" },
+  { id: "1", _id: "1", authorName: "Alice", authorEmail: "alice@example.com", content: "This was an incredibly insightful read. Thank you!", blogId: "1", createdAt: "2025-09-11" },
+  { id: "2", _id: "2", authorName: "Bob", authorEmail: "bob@example.com", content: "Great article, but I have a question about the color palette choices.", blogId: "2", createdAt: "2025-09-10" },
 ];
 
 export const getComments = async (): Promise<Comment[]> => {
-  return allComments;
+  // This function now correctly returns data that matches the Comment type
+  return allComments; 
 };
 
 // Corrected sample data with all required properties
@@ -85,3 +82,7 @@ export const getPublishedPosts = async (): Promise<Post[]> => {
 export const getPostById = async (id: string): Promise<Post | undefined> => {
     return allPosts.find(post => post.id === id);
 };
+
+export async function createSeries(name: string) {
+  console.log(`Creating series: ${name}`);
+}

@@ -1,3 +1,4 @@
+// app/post/[id]/page.tsx
 import Image from "next/image";
 import { fetchSingleBlog } from "@/lib/data-service"; // <-- UPDATED IMPORT
 import { Badge } from "@/components/ui/badge";
@@ -43,10 +44,10 @@ export default async function PostPage({ params }: PostPageProps) {
         dangerouslySetInnerHTML={{ __html: post.content }} 
       />
 
-      <hr className="my-12" />
+      <hr className="my-8" />
 
-      {/* The 'id' property is now guaranteed to exist from standardization */}
-      <CommentSection blogId={post.id!} /> 
+      {/* Ensure postId is correctly passed to CommentSection */}
+      <CommentSection postId={params.id} />
     </article>
   );
 }

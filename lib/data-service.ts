@@ -1,95 +1,76 @@
-export interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  description: string;
-  tags: string;
-  seriesId: string;
-  isPublished?: boolean;
-  publishedAt?: string;
-  image: string[]; // This will hold the URL of the feature image
-  imageUrl?: string; // This will hold the URL of the feature image
-  category: string;
-  file?: File | null; // This will be used for uploading the new image
-  allowComments?: boolean;
-  authorId?: string;
-}
-
-
-
-export interface Author {
-  authorId: string;
-  name: string;
-}
-
-export interface Category {
-  categoryId: string;
-  name: string;
-}
-
-export interface Series {
-  _id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  blogsId: string[];
-}
-
-export interface BlogData {
-  posts: Post[];
-  authors: Author[];
-  categories: Category[];
-  series: Series[];
-}
+import { BlogData, Post, Author, Category, Series } from "./types";
 
 const BASE_URL = 'https://myuniversallanguages.com:9093';
-const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGFjOGNjYTVjNDlmMjM5ODJkZjAyY2EiLCJ0aW1lem9uZSI6IkFzaWEvS2FyYWNoaSIsImVtYWlsIjoic3llZGFxaXJyYXRmYXRpbWFAZ21haWwuY29tIiwibmFtZSI6IlN5ZWRhIFFpcnJhdCBGYXRpbWEgWmFpZGkiLCJ1c2VyVHlwZSI6ImFkbWluIiwiY29tcGFueSI6Imk4aXMuY29tIiwidGltZXpvbmVPZmZzZXQiOiI1IiwiY29tcGFueUlkIjoiNjc5YTI5ZjVjZGZiOTU2Njk3MWE2NmU4IiwicGFzc3dvcmQiOiIkMmEkMTIkVVAyOE41Y0hxb2FyTkdkUDZDMDVGZU03Qi9tWmZFT3VpWDc1Y0ZGWXFHM0o3eFRYRFFlZ3EiLCJpczJGQUVuYWJsZWQiOnRydWUsImlhdCI6MTc1NzY3MTkxNiwiZXhwIjoxNzU3NzAwNzE2fQ.aONs9AOVICWHSwxUyWq-owiZfbknkMWHvxJutRSi9QE';
 
-const API_HEADERS = {
-  'Authorization': `Bearer ${AUTH_TOKEN}`,
+// Helper to get headers with a dynamic token
+const getAuthHeaders = (token: string) => ({
+  'Authorization': `Bearer ${token}`,
+});
+
+// Helper to create standardized post objects
+const standardizePost = (post: any, authors: Author[]): Post => {
+  const author = authors.find(a => a.authorId === post.authorId);
+  return {
+    ...post,
+    id: post._id,
+    authorName: author ? author.name : 'Unknown Author',
+    status: post.isPublished ? 'Published' : 'Draft',
+    // Ensure imageUrl is consistent
+    imageUrl: post.image && post.image.length > 0 ? post.image[0] : '/placeholder.jpg',
+    publishedAt: post.publishedAt || new Date().toISOString(),
+  };
 };
-
 
 // --- PUBLIC-FACING FUNCTIONS ---
 
-export const fetchSingleBlog = async (blogId: string): Promise<Post> => {
+export const fetchSingleBlog = async (blogId: string): Promise<Post | undefined> => {
+  try {
     const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getSingleBlog/${blogId}`);
     if (!response.ok) {
-        throw new Error(`Failed to fetch blog with ID ${blogId}: ${response.statusText}`);
+      throw new Error(`Failed to fetch blog with ID ${blogId}: ${response.statusText}`);
     }
     const data = await response.json();
-    return data.data;
+    const { authors } = await loadBlogData(); // Fetch authors to standardize post
+    return standardizePost(data.data, authors);
+  } catch (error) {
+    console.error("Error fetching single blog:", error);
+    return undefined;
+  }
 };
 
 export const loadBlogData = async (): Promise<BlogData> => {
-    try {
-        const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`);
-        if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
-        const blogsData = await blogsResponse.json();
+  try {
+    // Mock data for authors and categories as it's not in the API response
+    const authors: Author[] = [
+        { "authorId": "1", "name": "Alice Smith" },
+        { "authorId": "2", "name": "Bob Johnson" }
+    ];
+    const categories: Category[] = [
+        { "categoryId": "tech", "name": "Technology" },
+        { "categoryId": "productivity", "name": "Productivity" }
+    ];
+    
+    const blogsResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/getBlogs`);
+    if (!blogsResponse.ok) throw new Error(`Failed to fetch blogs: ${blogsResponse.statusText}`);
+    const blogsData = await blogsResponse.json();
 
-        const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`);
-        if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
-        const seriesData = await seriesResponse.json();
+    // Standardize all posts by mapping _id to id and adding missing fields
+    const standardizedPosts = blogsData.data.map((post: any) => standardizePost(post, authors));
 
-        const authors = [
-            { "authorId": "1", "name": "Alice Smith" },
-            { "authorId": "2", "name": "Bob Johnson" }
-        ];
-        const categories = [
-            { "categoryId": "tech", "name": "Technology" },
-            { "categoryId": "productivity", "name": "Productivity" }
-        ];
+    const seriesResponse = await fetch(`${BASE_URL}/api/v1/superAdmin/series/getAllSeries`);
+    if (!seriesResponse.ok) throw new Error(`Failed to fetch series: ${seriesResponse.statusText}`);
+    const seriesData = await seriesResponse.json();
 
-        return {
-            posts: blogsData.data,
-            series: seriesData.data,
-            authors: authors,
-            categories: categories,
-        };
-    } catch (error) {
-        console.error("Error fetching data from live API:", error);
-        throw error;
-    }
+    return {
+      posts: standardizedPosts,
+      series: seriesData.data,
+      authors: authors,
+      categories: categories,
+    };
+  } catch (error) {
+    console.error("Error fetching data from live API:", error);
+    throw error;
+  }
 };
 
 export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
@@ -100,7 +81,8 @@ export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
             throw new Error(`Failed to get blogs by series: ${response.statusText}, message: ${errorData.message || response.statusText}`);
         }
         const data = await response.json();
-        return data.data;
+        const { authors } = await loadBlogData(); // Fetch authors to standardize post
+        return data.data.map((post: any) => standardizePost(post, authors)); // Standardize posts in the series
     } catch (error) {
         console.error("Error fetching blogs by series from API:", error);
         return [];
@@ -109,18 +91,18 @@ export const getBlogsBySeries = async (seriesId: string): Promise<Post[]> => {
 
 // --- ADMIN-ONLY (CRUD) OPERATIONS ---
 
-export const createBlog = async (postData: any) => {
+export const createBlog = async (postData: any, token: string) => {
     try {
         const formData = new FormData();
         Object.keys(postData).forEach(key => {
             if (postData[key] !== null && postData[key] !== undefined) {
-                 formData.append(key, postData[key]);
+                formData.append(key, postData[key]);
             }
         });
 
         const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/createBlog`, {
             method: 'POST',
-            headers: API_HEADERS,
+            headers: getAuthHeaders(token),
             body: formData,
         });
 
@@ -135,14 +117,14 @@ export const createBlog = async (postData: any) => {
     }
 };
 
-export const updateBlog = async (postData: Partial<Post>) => {
+export const updateBlog = async (postData: Partial<Post>, token: string) => {
     try {
         const url = `${BASE_URL}/api/v1/superAdmin/blogs/updateBlogs/${postData._id}`;
         const response = await fetch(url, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                ...API_HEADERS,
+                ...getAuthHeaders(token),
             },
             body: JSON.stringify(postData),
         });
@@ -158,11 +140,11 @@ export const updateBlog = async (postData: Partial<Post>) => {
     }
 };
 
-export const deleteblogs = async (blogId: string) => {
+export const deleteblogs = async (blogId: string, token: string) => {
     try {
         const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/deleteBlog/${blogId}`, {
             method: 'DELETE',
-            headers: API_HEADERS,
+            headers: getAuthHeaders(token),
         });
 
         if (!response.ok) {
@@ -176,13 +158,13 @@ export const deleteblogs = async (blogId: string) => {
     }
 };
 
-export const publishBlog = async (blogId: string, isPublished: boolean) => {
+export const publishBlog = async (blogId: string, isPublished: boolean, token: string) => {
     try {
         const response = await fetch(`${BASE_URL}/api/v1/superAdmin/blogs/publishBlog/${blogId}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                 ...API_HEADERS,
+                ...getAuthHeaders(token),
             },
             body: JSON.stringify({ isPublished }),
         });
@@ -202,7 +184,7 @@ export const createSeries = async (seriesData: {
     title: string;
     description: string;
     file?: File | null;
-}) => {
+}, token: string) => {
     try {
         const formData = new FormData();
         formData.append('title', seriesData.title);
@@ -212,7 +194,7 @@ export const createSeries = async (seriesData: {
         }
         const response = await fetch(`${BASE_URL}/api/v1/superAdmin/series/createSeries`, {
             method: 'POST',
-            headers: API_HEADERS,
+            headers: getAuthHeaders(token),
             body: formData,
         });
 
@@ -235,15 +217,17 @@ export interface Comment {
   authorName: string;
   authorEmail: string;
   content: string;
-  createdAt: string; 
+  createdAt: string;
 }
 
 export const fetchCommentsForBlog = async (blogId: string): Promise<Comment[]> => {
-    // This is a placeholder
-    return [];
+  // This is a placeholder
+  console.warn("fetchCommentsForBlog is not implemented.");
+  return [];
 };
 
 export const createComment = async (commentData: Omit<Comment, "_id" | "createdAt">): Promise<Comment> => {
-    // This is a placeholder
-    return { ...commentData, _id: `c${Date.now()}`, createdAt: new Date().toISOString() };
+  // This is a placeholder
+  console.warn("createComment is not implemented.");
+  return { ...commentData, _id: `c${Date.now()}`, createdAt: new Date().toISOString() };
 };

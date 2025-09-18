@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { getPostById } from "@/lib/data";
+import { fetchSingleBlog } from "@/lib/data-service"; // <-- UPDATED IMPORT
 import { Badge } from "@/components/ui/badge";
 import { CommentSection } from "@/components/comment-section";
 
@@ -11,7 +11,8 @@ interface PostPageProps {
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const post = await getPostById(params.id);
+  // Use the function that fetches from the live API
+  const post = await fetchSingleBlog(params.id);
 
   if (!post) {
     return <div>Post not found.</div>;
@@ -44,7 +45,8 @@ export default async function PostPage({ params }: PostPageProps) {
 
       <hr className="my-12" />
 
-      <CommentSection blogId={post.id} />
+      {/* The 'id' property is now guaranteed to exist from standardization */}
+      <CommentSection blogId={post.id!} /> 
     </article>
   );
 }

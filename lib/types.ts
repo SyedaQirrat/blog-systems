@@ -1,51 +1,55 @@
 // This file is the single source of truth for all our data structures.
 
 export interface Post {
-  id: string;
+  id: string; // Use 'id' consistently in the frontend
+  _id: string; // Keep original '_id' from the API
   title: string;
   content: string;
   description: string;
   tags: string;
   seriesId: string;
   status: "Published" | "Draft" | "Pending Approval";
+  isPublished?: boolean;
   publishedAt: string;
-  imageUrl: string;
+  imageUrl?: string;
+  image: string[];
   category: string;
   allowComments: boolean;
   authorId: string;
   authorName: string;
+  file?: File | null;
 }
 
-export interface User {
-  id: string;
+export interface Author {
+  authorId: string;
   name: string;
-  email: string;
-  role: "Admin" | "Editor" | "Author/Writer";
-  posts: number;
 }
 
 export interface Category {
-  id: string;
+  categoryId: string;
   name: string;
-  description: string;
-  postCount: number;
 }
 
 export interface Series {
-  id: string;
+  _id: string;
   title: string;
   description: string;
-  postCount: number;
+  imageUrl: string;
+  blogsId: string[];
 }
 
-// Add the missing Comment interface here
+export interface BlogData {
+  posts: Post[];
+  authors: Author[];
+  categories: Category[];
+  series: Series[];
+}
+
 export interface Comment {
-  id: string;
+  _id: string;
+  blogId: string;
   authorName: string;
   authorEmail: string;
   content: string;
-  postTitle: string;
-  postId: string;
-  submittedAt: string;
-  status: "Approved" | "Pending";
+  createdAt: string;
 }
